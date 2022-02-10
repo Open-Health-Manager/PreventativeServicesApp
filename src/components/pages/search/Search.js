@@ -16,7 +16,7 @@ function Search() {
     const [patientID, setPatientID] = useState('');
     const [currentAge, setCurrentAge] = useState('');
     const [smokingStatus, setSmokingStatus] = useState('');
-    
+    const [preventativeServiceList, setPreventativeServiceList] = useState('');
 
     const onSubmit = data => {
         setPatientID(data.patientID)
@@ -27,6 +27,7 @@ function Search() {
             data: data
         }).then((response)=>{
             if (response.data.status === 200){
+                console.log("Patient was Found")
                 var data = response.data;
                 var gender = data.data.gender;
                 var dob = data.data.birthDate;
@@ -34,8 +35,7 @@ function Search() {
                 console.log(dob)
                 setCurrentAge(calculate_age(dob));
                 smoking_status(patientID)
-                preventatives_services(gender, currentAge, smokingStatus); 
-                console.log("Patient was Found")
+                preventatives_services(gender, currentAge, smokingStatus);
             } else if(response.data.status === 404){
                 console.log("Patient not Found")
             }
@@ -56,9 +56,9 @@ function Search() {
     }
 
     //make query to search for smoking status of Patient 
-    const smoking_status = (patientID) => {
+    const smoking_status = async (patientID) => {
         console.log(patientID)
-        axios({
+        await axios({
             method: "POST",
             url: "http://localhost:4002/smoking_status",
             data: {
@@ -68,8 +68,9 @@ function Search() {
                 var data = response.data;
                 var entry = data.data.total;
                 if(entry != 0){
-                    var smoking_status = data.data.entry[0].resource.valueCodeableConcept.text
-                    if (smoking_status === "Never smoker") {
+                    var smoking_status = data.data.entry[0].resource.valueCodeableConcept.coding[0].code
+                    console.log(smoking_status)
+                    if (smoking_status === "266919005" || smoking_status === "266927001" || smoking_status === "8517006") {
                         setSmokingStatus("N")
                         console.log(smokingStatus)
                     }
@@ -81,10 +82,10 @@ function Search() {
     }
 
     //make query to preventative services to provide list of potential services for patient to front-end client 
-    const preventatives_services = (gender, age, smokingStatus) => {
+    const preventatives_services = async (gender, age, smokingStatus) => {
         console.log(gender);
         console.log(age);   
-        axios({
+        await axios({
             method: "POST",
             url: "http://localhost:4002/preventatives_services",
             data: {
@@ -94,7 +95,8 @@ function Search() {
             },
         }).then((response)=>{           
                 var data = response.data;
-                console.log(data);
+                setPreventativeServiceList(data)
+                console.log(preventativeServiceList);
                 console.log("preventative services success");
         });
     }

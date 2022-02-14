@@ -6,6 +6,14 @@ h1{
     color: white
 }
 
+h2{
+    color: white
+}
+
+li{
+    color:white
+}
+
 .content-block {
     padding-top: 80px;
     max-width: 1600px;

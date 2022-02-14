@@ -13,33 +13,25 @@ function Search() {
         mode: 'onTouched',
     });
 
-    const [patientID, setPatientID] = useState('');
-    const [currentAge, setCurrentAge] = useState('');
-    const [smokingStatus, setSmokingStatus] = useState('');
-    const [preventativeServiceList, setPreventativeServiceList] = useState('');
+    const [preventativeServiceList, setPreventativeServiceList] = useState([]);
 
-    const onSubmit = data => {
-        setPatientID(data.patientID)
-        console.log(patientID)
-        axios({
+    const onSubmit = async (data) => {
+        console.log(data.patientID)
+        const response = await axios({
             method: "POST",
             url: "http://localhost:4002/patient",
             data: data
-        }).then((response)=>{
-            if (response.data.status === 200){
-                console.log("Patient was Found")
-                var data = response.data;
-                var gender = data.data.gender;
-                var dob = data.data.birthDate;
-                console.log(gender)
-                console.log(dob)
-                setCurrentAge(calculate_age(dob));
-                smoking_status(patientID)
-                preventatives_services(gender, currentAge, smokingStatus);
-            } else if(response.data.status === 404){
-                console.log("Patient not Found")
-            }
         });
+        if (response.data.status === 200){
+            console.log("Patient was Found", response.data)
+            var gender = response.data.data.gender;
+            var dob = response.data.data.birthDate;
+            console.log(gender)
+            console.log(dob)
+            await preventatives_services(gender, calculate_age(dob), await smoking_status(data.patientID));
+        } else if(response.data.status === 404){
+            console.log("Patient not Found")
+        }
     }
 
     //calculates the current age from data of birth 
@@ -58,34 +50,34 @@ function Search() {
     //make query to search for smoking status of Patient 
     const smoking_status = async (patientID) => {
         console.log(patientID)
-        await axios({
+        const response = await axios({
             method: "POST",
             url: "http://localhost:4002/smoking_status",
             data: {
                 patientID: patientID
             },
-        }).then((response)=>{           
-                var data = response.data;
-                var entry = data.data.total;
-                if(entry != 0){
-                    var smoking_status = data.data.entry[0].resource.valueCodeableConcept.coding[0].code
-                    console.log(smoking_status)
-                    if (smoking_status === "266919005" || smoking_status === "266927001" || smoking_status === "8517006") {
-                        setSmokingStatus("N")
-                        console.log(smokingStatus)
-                    }
-                } else {
-                        setSmokingStatus("N")
-                        console.log(smokingStatus)
-                }
-        });
+        })           
+        var data = response.data;
+        var entry = data.data.total;
+        if(entry != 0){
+            var smoking_status = data.data.entry[0].resource.valueCodeableConcept.coding[0].code
+            console.log(smoking_status)
+            if (smoking_status === "266919005" || smoking_status === "266927001" || smoking_status === "8517006") {
+                return "N"
+            } else {
+                return "Y"
+            }
+        } else {
+            return "N"
+        }
     }
 
     //make query to preventative services to provide list of potential services for patient to front-end client 
     const preventatives_services = async (gender, age, smokingStatus) => {
         console.log(gender);
         console.log(age);   
-        await axios({
+        console.log(smokingStatus)
+        const response = await axios({
             method: "POST",
             url: "http://localhost:4002/preventatives_services",
             data: {
@@ -93,12 +85,12 @@ function Search() {
                 age: age,
                 smokingStatus: smokingStatus
             },
-        }).then((response)=>{           
-                var data = response.data;
-                setPreventativeServiceList(data)
-                console.log(preventativeServiceList);
-                console.log("preventative services success");
-        });
+        })         
+        var data = response.data;
+        console.log(data)
+        setPreventativeServiceList(data)
+        console.log(preventativeServiceList);
+        console.log("preventative services success");
     }
     
 
@@ -108,12 +100,22 @@ function Search() {
                 <Col md={6}>
                     <h1>FHIR Patient ID Search</h1>
                     <form onSubmit={handleSubmit(onSubmit)}>
-                        <input type="text" className="form-control" name="patientID"{...register("patientID", { required: true, minLength: 2 })}/>
+                        <input type="text" className="form-control" {...register("patientID", { required: true, minLength: 2 })}/>
                         {errors.patientID && <p className="error-text">patientID is required</p>}
-                        <Button variant='form' type="button" onClick={handleSubmit(onSubmit)}>Submit</Button>
+                        <Button variant='form' type="submit">Submit</Button>
                     </form>
                 </Col>
             </Row>
+            {!!preventativeServiceList && !!preventativeServiceList.specificRecommendations && 
+            <Row>
+                 <Col md={6}>
+                        <h1 style={{paddingTop:"20px"}}>Preventative Services List</h1> 
+
+                        <h2>Specific Recommendations</h2> 
+                        <ul> {preventativeServiceList.specificRecommendations.map(item => <li key={item.id}>{item.title}</li>)}</ul>
+                </Col>
+            </Row>
+            }
         </Container>
     )
 }

@@ -14,7 +14,7 @@ function Search() {
     });
 
     const [preventativeServiceList, setPreventativeServiceList] = useState([]);
-
+    
     const onSubmit = async (data) => {
         console.log(data.patientID)
         const response = await axios({
@@ -89,7 +89,6 @@ function Search() {
         var data = response.data;
         console.log(data)
         setPreventativeServiceList(data)
-        console.log(preventativeServiceList);
         console.log("preventative services success");
     }
     
@@ -106,7 +105,7 @@ function Search() {
                     </form>
                 </Col>
             </Row>
-            {!!preventativeServiceList && !!preventativeServiceList.specificRecommendations && 
+            {  preventativeServiceList?.specificRecommendations?.length > 0 ?
             <Row>
                  <Col md={6}>
                         <h1 style={{paddingTop:"20px"}}>Preventative Services List</h1> 
@@ -114,7 +113,72 @@ function Search() {
                         <h2>Specific Recommendations</h2> 
                         <ul> {preventativeServiceList.specificRecommendations.map(item => <li key={item.id}>{item.title}</li>)}</ul>
                 </Col>
-            </Row>
+            </Row> : ''
+            }
+            { preventativeServiceList?.generalRecommendations &&
+            <Row>
+                 <Col md={6}>
+                        <h2>General Recommendations</h2> <ul>
+                        { 
+                          Object.keys(preventativeServiceList.generalRecommendations).map((item) => (
+                                <li key={item}>{preventativeServiceList.generalRecommendations[item].title}</li>
+                          ))
+                        }
+                        </ul>
+                </Col>
+            </Row> 
+            }
+            { preventativeServiceList?.categories &&
+            <Row>
+                 <Col md={6}>
+                        <h2>Categories</h2> <ul>
+                        { 
+                          Object.keys(preventativeServiceList.categories).map((item) => (
+                                <li key={item}>{preventativeServiceList.categories[item].name}</li>
+                          ))
+                        }
+                        </ul>
+                </Col>
+            </Row> 
+            }
+            { preventativeServiceList?.tools &&
+            <Row>
+                 <Col md={6}>
+                        <h2>Tools</h2> <ul>
+                        { 
+                          Object.keys(preventativeServiceList.tools).map((item) => (
+                                <li key={item}>{preventativeServiceList.tools[item].title}</li>
+                          ))
+                        }
+                        </ul>
+                </Col>
+            </Row> 
+            }
+            { preventativeServiceList?.risks &&
+            <Row>
+                 <Col md={6}>
+                        <h2>Risks</h2> <ul>
+                        { 
+                          Object.keys(preventativeServiceList.risks).map((item) => (
+                                <li key={item}>{preventativeServiceList.risks[item].name}</li>
+                          ))
+                        }
+                        </ul>
+                </Col>
+            </Row> 
+            }
+            { preventativeServiceList?.grades &&
+            <Row>
+                 <Col md={6}>
+                        <h2>grades</h2> <ul>
+                        { 
+                          Object.keys(preventativeServiceList.grades).map((item) => (
+                                <li key={item}>{item}: {preventativeServiceList.grades[item]}</li>
+                          ))
+                        }
+                        </ul>
+                </Col>
+            </Row> 
             }
         </Container>
     )

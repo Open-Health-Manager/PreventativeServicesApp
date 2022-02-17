@@ -14,7 +14,10 @@ function Search() {
     });
 
     const [preventativeServiceList, setPreventativeServiceList] = useState([]);
-    
+    const [gender, setGender] = useState('');
+    const [age, setAge] = useState('');
+    const [smokingStatus, setSmokingStatus] = useState('');
+
     const onSubmit = async (data) => {
         console.log(data.patientID)
         const response = await axios({
@@ -74,9 +77,12 @@ function Search() {
 
     //make query to preventative services to provide list of potential services for patient to front-end client 
     const preventatives_services = async (gender, age, smokingStatus) => {
+        setGender(gender);
+        setAge(age);
+        setSmokingStatus(smokingStatus);
         console.log(gender);
         console.log(age);   
-        console.log(smokingStatus)
+        console.log(smokingStatus);
         const response = await axios({
             method: "POST",
             url: "http://localhost:4002/preventatives_services",
@@ -105,10 +111,20 @@ function Search() {
                     </form>
                 </Col>
             </Row>
+            { gender && age && smokingStatus &&
+            <Row>
+                <Col md={6}>
+                    <h1 style={{paddingTop:"30px"}}>Patient Info:</h1>
+                    <h3>Gender: {gender} </h3>
+                    <h3>Age: {age} </h3>
+                    <h3>Smoking Status: {smokingStatus} </h3>
+                </Col>
+            </Row> 
+            }
             {  preventativeServiceList?.specificRecommendations?.length > 0 ?
             <Row>
                  <Col md={6}>
-                        <h1 style={{paddingTop:"20px"}}>Preventative Services List</h1> 
+                        <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1> 
 
                         <h2>Specific Recommendations</h2> 
                         <ul> {preventativeServiceList.specificRecommendations.map(item => <li key={item.id}>{item.title}</li>)}</ul>

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const https = require('https');
+const qs = require('qs');
 const mkFhir = require('fhir.js');
 
 const fhir_client = mkFhir({
@@ -56,34 +57,6 @@ router.post("/smoking_status", function (req, res) {
     });
 });
 
-//Check for Smoking Status of Patient based on Patient ID 
-router.post("/observation", function (req, res) {
-    
-    const { patientID } = req.body;
-    console.log("req", req.body);
-    
-    const agent = new https.Agent({  
-        rejectUnauthorized: false
-    });
-
-    axios({
-        method: "GET",
-        url: "https://hapi.fhir.org/baseR4/Observation",
-        httpsAgent: agent,
-        params: {
-            code: 'http://loinc.org%7C72166-2',
-            patientID: '1574669'
-        },
-    }).then(response => {
-        var data = response.data;
-        console.log(data)
-        res.status(200).json(response.data);
-    })
-    .catch((err) => {
-        res.status(500).json({ message: err });
-    });
-});
-
 //Call Preventative Services API based on gender, age, and smoking status 
 router.post('/preventatives_services', function(req, res){
 
@@ -102,14 +75,19 @@ router.post('/preventatives_services', function(req, res){
             key: 'a49dac2626acf9ab1aef69b961e40dd2',
             age: age,
             sex: gender,
-            tobacco: smokingStatus
+            tobacco: smokingStatus,
+            grade: ["A", "B"],
+        },
+        paramsSerializer: (params) => {
+            return qs.stringify(params, { arrayFormat: 'repeat' })
         },
     }).then(response => {
         var data = response.data;
         res.status(200).json(response.data);
     })
     .catch((err) => {
-        res.status(500).json({ message: err });
+        console.log(err.message)
+        res.status(500).json({ message: err.message });
     });
 });
 

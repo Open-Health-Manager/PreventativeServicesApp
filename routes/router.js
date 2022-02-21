@@ -57,6 +57,29 @@ router.post("/smoking_status", function (req, res) {
     });
 });
 
+//Check if Patient has had a Colonoscopy performed 
+router.post('/colonoscopy_check', function(req, res){
+    const { patientID } = req.body;
+    console.log("req", req.body);
+    fhir_client.search({type: 'Procedure', query: { 'patient': patientID, 'code': 'http://snomed.info/sct|73761001', 'date': {$and: ['ge2020-01-01', 'le2023-12-31']}}})
+    .then(result => {
+        var data = result.data;
+        console.log(data)
+        res.end(JSON.stringify(result, null, 4))
+    })
+    .catch(function(res){
+        //Error responses
+        if (res.status){
+            console.log('Error', res.status);
+        }
+
+        //Errors
+        if (res.message){
+            console.log('Error', res.message);
+        }
+    });
+});
+
 //Call Preventative Services API based on gender, age, and smoking status 
 router.post('/preventatives_services', function(req, res){
 

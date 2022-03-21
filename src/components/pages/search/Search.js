@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState } from 'react'; 
 import { Accordion, Container, Row, Col, Button } from "react-bootstrap";
 import { useForm } from 'react-hook-form';
 import axios from "axios";
@@ -84,7 +84,7 @@ function Search() {
         var data = response.data;
         var colonoscopy_procedure_entry = data.data.total;
         console.log(data);
-        if(colonoscopy_procedure_entry != 0){
+        if(colonoscopy_procedure_entry !== 0){
             return "Y"
         } else {
             return "N"
@@ -105,7 +105,7 @@ function Search() {
         var data = response.data;
         console.log(data)
         var smoking_status_entry = data.data.total;
-        if(smoking_status_entry != 0){
+        if(smoking_status_entry !== 0){
             var smoking_status = data.data.entry[0].resource.valueCodeableConcept.coding[0].code
             console.log(smoking_status)
             if (smoking_status === "266919005" || smoking_status === "266927001" || smoking_status === "8517006") {
@@ -153,10 +153,16 @@ function Search() {
             },
         })
         var data = response.data;
-        console.log(data.data.entry[0].resource.valueQuantity.value)
-        var bmiValue = data.data.entry[0].resource.valueQuantity.value
-        setBMI(bmiValue)
-        console.log("BMI retrieval succesful");
+        var BMI_entry = data.data.total
+        if(BMI_entry !== 0){
+            console.log(data.data.entry[0].resource.valueQuantity.value)
+            var bmiValue = data.data.entry[0].resource.valueQuantity.value
+            setBMI(bmiValue)
+            console.log("BMI retrieval succesful");
+        } else {
+            console.log("BMI not taken");
+            return
+        }
     }
 
     const getHeight = async (patientID) => {
@@ -169,13 +175,19 @@ function Search() {
             },
         })
         var data = response.data;
-        var height = Math.round(data.data.entry[0].resource.valueQuantity.value / 2.54)
-        var feet = Math.floor(height/12)
-        var inches = (height - (feet * 12))
-        var feet_and_inches = feet + " ft" + " " + inches + " inches"
-        console.log(feet_and_inches)
-        setHeight(feet_and_inches)
-        console.log("Height retrieval succesful");
+        var height_entry = data.data.total;
+        if(height_entry !== 0){
+            var height = Math.round(data.data.entry[0].resource.valueQuantity.value / 2.54)
+            var feet = Math.floor(height/12)
+            var inches = (height - (feet * 12))
+            var feet_and_inches = feet + " ft" + " " + inches + " inches"
+            console.log(feet_and_inches)
+            setHeight(feet_and_inches)
+            console.log("Height retrieval succesful");
+        } else {
+            console.log("Height not taken");
+            return
+        }
     }
 
     const getWeight = async (patientID) => {
@@ -188,12 +200,18 @@ function Search() {
             },
         })
         var data = response.data;
-        console.log((data.data.entry[0].resource.valueQuantity.value * 2.205).toFixed(2))
-        console.log(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
-        var weight = data.data.entry[0].resource.valueQuantity.value.toFixed(2)
-        setWeightRecored(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
-        setWeight(weight)
-        console.log("Weight retrieval succesful");
+        var weight_entry = data.data.total;
+        if(weight_entry !== 0){
+            console.log((data.data.entry[0].resource.valueQuantity.value * 2.205).toFixed(2))
+            console.log(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+            var weight = data.data.entry[0].resource.valueQuantity.value.toFixed(2)
+            setWeightRecored(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+            setWeight(weight)
+            console.log("Weight retrieval succesful");
+        } else {
+            console.log("Weight not taken");
+            return
+        }
     }
 
     const getBloodPressure = async (patientID) => {
@@ -206,13 +224,19 @@ function Search() {
             },
         })
         var data = response.data;
-        console.log(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
-        var systolic = data.data.entry[0].resource.component[0].valueQuantity.value
-        var diastolic = data.data.entry[0].resource.component[1].valueQuantity.value
-        setSystolicBloodPressure(systolic)
-        setDiastolicBloodPressure(diastolic)
-        setBloodPressureRecored(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
-        console.log("blood pressure retrieval succesful");
+        var blood_pressure_entry = data.data.total;
+        if(blood_pressure_entry !== 0){
+            console.log(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+            var systolic = data.data.entry[0].resource.component[0].valueQuantity.value
+            var diastolic = data.data.entry[0].resource.component[1].valueQuantity.value
+            setSystolicBloodPressure(systolic)
+            setDiastolicBloodPressure(diastolic)
+            setBloodPressureRecored(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+            console.log("Blood pressure retrieval succesful");
+        } else {
+            console.log("Blood pressure not taken");
+            return
+        }
     }
     
 
@@ -228,23 +252,21 @@ function Search() {
                     </form>
                 </Col>
             </Row>
-            { gender && age && smokingStatus && weight && height && bmi && systolicbloodpressure && diastolicbloodpressure && dob && weightRecorded && bloodpressureRecored &&
             <Row>
                 <Col md={6}>
-                    <h1 style={{paddingTop:"30px"}}>Patient Info:</h1>
-                    <h3>Date of Birth: {dob} </h3>
-                    <h3>Sex assigned at Birth: {gender} </h3>
-                    <h3>Age: {age} </h3>
-                    <h3>Height: {height} </h3>
-                    <h3>Weight: {weight} lbs</h3>
-                    <h3>Date Weight Recorded: {weightRecorded}</h3>
-                    <h3>BMI: {bmi} kg/m2</h3>
-                    <h3>Blood pressure: {systolicbloodpressure}/{diastolicbloodpressure} mmHg</h3>
-                    <h3>Date Blood Pressure Recorded: {bloodpressureRecored}</h3>
-                    <h3>Smoking Status: {smokingStatus} </h3>
+                    { dob && <h1 style={{paddingTop:"30px"}}>Patient Info:</h1> }
+                    { dob && <h3>Date of Birth: {dob} </h3> }
+                    { gender && <h3>Sex assigned at Birth: {gender} </h3> }
+                    { age && <h3>Age: {age} </h3> }
+                    { height && <h3>Height: {height} </h3> }
+                    { weight && <h3>Weight: {weight} lbs</h3> }
+                    { weightRecorded && <h3>Date Weight Recorded: {weightRecorded}</h3> }
+                    { bmi && <h3>BMI: {bmi} kg/m2</h3> }
+                    { systolicbloodpressure && diastolicbloodpressure && <h3>Blood pressure: {systolicbloodpressure}/{diastolicbloodpressure} mmHg</h3> }
+                    { bloodpressureRecored && <h3>Date Blood Pressure Recorded: {bloodpressureRecored}</h3> }
+                    { smokingStatus && <h3>Smoking Status: {smokingStatus} </h3> }
                 </Col>
             </Row> 
-            }
             {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure == "Y" ?
             <Row>
                  <Col md={6}>

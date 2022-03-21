@@ -1,54 +1,93 @@
 body {
-    background-color: #0D2F4F;
+  background-color: #0d2f4f;
 }
 
-h1{
-    color: white;
+h1 {
+  color: white;
 }
 
-h2{
-    color: white
+h2 {
+  color: white;
 }
 
-h3{
-    color: white;
-    padding: 10px;
+h3 {
+  color: white;
+  padding: 10px;
 }
 
-li{
-    color:white
+li {
+  color: white;
+}
+
+.accordion-button {
+  background-color: #0d2f4f;
+  border: 0px;
+  border-radius: 0px;
+  outline: 2px solid #fff;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.accordion-button::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FFFFFF'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+.accordion-button:not(.collapsed) {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.accordion-item:last-of-type {
+  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+.accordion-item:first-of-type {
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0px;
+}
+
+.accordion-item:last-of-type .accordion-button.collapsed {
+  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+.accordion-item:first-of-type .accordion-button.collapsed {
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0px;
 }
 
 .content-block {
-    padding-top: 80px;
-    max-width: 1600px;
-    padding-left: 40px;
-    padding-right: 40px;
+  padding-top: 80px;
+  max-width: 1600px;
+  padding-left: 40px;
+  padding-right: 40px;
 }
 
-.btn-form{
-    background: #0B2338;
-    color: #FFE800;
-    font-size: 18px;
-    font-weight: bold;
-    border: 1px solid #ffffff;
-    border-radius: 0px;
-    text-transform: uppercase;
-    width: 150px;
-    height: 45px;
-    margin-top: 20px;
+.btn-form {
+  background: #0b2338;
+  color: #ffe800;
+  font-size: 18px;
+  font-weight: bold;
+  border: 1px solid #ffffff;
+  border-radius: 0px;
+  text-transform: uppercase;
+  width: 150px;
+  height: 45px;
+  margin-top: 20px;
 }
 
 .btn-form:hover {
-    color: #FFE800;
+  color: #ffe800;
 }
 
-.error-text{
-    color: #C6401D;
-    background-color: #FCF0ED;
-    border: 1px solid #C6401D;
-    font-size: 16px;
-    max-width: 230px;
-    text-align: center;
-    padding: 5px;
+.error-text {
+  color: #c6401d;
+  background-color: #fcf0ed;
+  border: 1px solid #c6401d;
+  font-size: 16px;
+  max-width: 230px;
+  text-align: center;
+  padding: 5px;
 }

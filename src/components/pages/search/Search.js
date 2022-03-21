@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'; 
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Accordion, Container, Row, Col, Button } from "react-bootstrap";
 import { useForm } from 'react-hook-form';
 import axios from "axios";
 
@@ -14,26 +14,46 @@ function Search() {
     });
 
     const [preventativeServiceList, setPreventativeServiceList] = useState([]);
+    
     const [gender, setGender] = useState('');
     const [age, setAge] = useState('');
+    const [dob, setDOB] = useState('');
+
+    const [weight, setWeight] = useState('');
+    const [weightRecorded, setWeightRecored] = useState('');
+
+    const [height, setHeight] = useState('');
+    const [bmi, setBMI] = useState('');
+
+    const [systolicbloodpressure, setSystolicBloodPressure] = useState('');
+    const [diastolicbloodpressure, setDiastolicBloodPressure] = useState('');
+    const [bloodpressureRecored, setBloodPressureRecored] = useState('');
+
     const [smokingStatus, setSmokingStatus] = useState('');
     const [colonoscopy_procedure, setColonoscopy_Procedure] = useState('');
 
     const onSubmit = async (data) => {
-        console.log(data.patientID)
+        console.log(data.userName)
         const response = await axios({
             method: "POST",
-            url: "http://localhost:4002/patient",
+            url: "http://localhost:4002/search_username",
             data: data
         });
-        if (response.data.status === 200){
-            console.log("Patient was Found", response.data)
-            var gender = response.data.data.gender;
-            var dob = response.data.data.birthDate;
+        if (response.status === 200){
+            var data = response.data;
+            console.log("Patient was Found", data)
+            var patientID = data.entry[0].resource.id
+            var gender = data.entry[0].resource.gender;
+            var dob = data.entry[0].resource.birthDate;
+            console.log(patientID)
             console.log(gender)
-            console.log(dob)
-            await preventatives_services(gender, calculate_age(dob), await smoking_status(data.patientID), await colonoscopy_check(data.patientID));
-        } else if(response.data.status === 404){
+            setDOB(new Date(dob).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+            await getBloodPressure(patientID)
+            await getBMI(patientID)
+            await getHeight(patientID)
+            await getWeight(patientID)
+            await preventatives_services(gender, calculate_age(dob), await smoking_status(patientID), await colonoscopy_check(patientID));
+        } else if(response.status === 404){
             console.log("Patient not Found")
         }
     }
@@ -83,6 +103,7 @@ function Search() {
             },
         })           
         var data = response.data;
+        console.log(data)
         var smoking_status_entry = data.data.total;
         if(smoking_status_entry != 0){
             var smoking_status = data.data.entry[0].resource.valueCodeableConcept.coding[0].code
@@ -121,26 +142,105 @@ function Search() {
         setPreventativeServiceList(data)
         console.log("preventative services success");
     }
+
+    const getBMI = async (patientID) => {
+        console.log(patientID)
+        const response = await axios({
+            method: "POST",
+            url: "http://localhost:4002/retrieve_bmi",
+            data: {
+                patientID: patientID
+            },
+        })
+        var data = response.data;
+        console.log(data.data.entry[0].resource.valueQuantity.value)
+        var bmiValue = data.data.entry[0].resource.valueQuantity.value
+        setBMI(bmiValue)
+        console.log("BMI retrieval succesful");
+    }
+
+    const getHeight = async (patientID) => {
+        console.log(patientID)
+        const response = await axios({
+            method: "POST",
+            url: "http://localhost:4002/retrieve_height",
+            data: {
+                patientID: patientID
+            },
+        })
+        var data = response.data;
+        var height = Math.round(data.data.entry[0].resource.valueQuantity.value / 2.54)
+        var feet = Math.floor(height/12)
+        var inches = (height - (feet * 12))
+        var feet_and_inches = feet + " ft" + " " + inches + " inches"
+        console.log(feet_and_inches)
+        setHeight(feet_and_inches)
+        console.log("Height retrieval succesful");
+    }
+
+    const getWeight = async (patientID) => {
+        console.log(patientID)
+        const response = await axios({
+            method: "POST",
+            url: "http://localhost:4002/retrieve_weight",
+            data: {
+                patientID: patientID
+            },
+        })
+        var data = response.data;
+        console.log((data.data.entry[0].resource.valueQuantity.value * 2.205).toFixed(2))
+        console.log(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+        var weight = data.data.entry[0].resource.valueQuantity.value.toFixed(2)
+        setWeightRecored(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+        setWeight(weight)
+        console.log("Weight retrieval succesful");
+    }
+
+    const getBloodPressure = async (patientID) => {
+        console.log(patientID)
+        const response = await axios({
+            method: "POST",
+            url: "http://localhost:4002/retrieve_blood_pressure",
+            data: {
+                patientID: patientID
+            },
+        })
+        var data = response.data;
+        console.log(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+        var systolic = data.data.entry[0].resource.component[0].valueQuantity.value
+        var diastolic = data.data.entry[0].resource.component[1].valueQuantity.value
+        setSystolicBloodPressure(systolic)
+        setDiastolicBloodPressure(diastolic)
+        setBloodPressureRecored(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+        console.log("blood pressure retrieval succesful");
+    }
     
 
     return (
         <Container fluid className="content-block">
             <Row style={{ paddingTop: "20px" }}>
                 <Col md={6}>
-                    <h1>FHIR Patient ID Search</h1>
+                    <h1>Preventative Health Check</h1>
                     <form onSubmit={handleSubmit(onSubmit)}>
-                        <input type="text" className="form-control" {...register("patientID", { required: true, minLength: 2 })}/>
-                        {errors.patientID && <p className="error-text">patientID is required</p>}
+                        <input type="text" className="form-control" {...register("userName", { required: true })}/>
+                        {errors.patientID && <p className="error-text">user name is required</p>}
                         <Button variant='form' type="submit">Submit</Button>
                     </form>
                 </Col>
             </Row>
-            { gender && age && smokingStatus &&
+            { gender && age && smokingStatus && weight && height && bmi && systolicbloodpressure && diastolicbloodpressure && dob && weightRecorded && bloodpressureRecored &&
             <Row>
                 <Col md={6}>
                     <h1 style={{paddingTop:"30px"}}>Patient Info:</h1>
-                    <h3>Gender: {gender} </h3>
+                    <h3>Date of Birth: {dob} </h3>
+                    <h3>Sex assigned at Birth: {gender} </h3>
                     <h3>Age: {age} </h3>
+                    <h3>Height: {height} </h3>
+                    <h3>Weight: {weight} lbs</h3>
+                    <h3>Date Weight Recorded: {weightRecorded}</h3>
+                    <h3>BMI: {bmi} kg/m2</h3>
+                    <h3>Blood pressure: {systolicbloodpressure}/{diastolicbloodpressure} mmHg</h3>
+                    <h3>Date Blood Pressure Recorded: {bloodpressureRecored}</h3>
                     <h3>Smoking Status: {smokingStatus} </h3>
                 </Col>
             </Row> 
@@ -150,8 +250,17 @@ function Search() {
                  <Col md={6}>
                         <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1> 
 
-                        <h2>Specific Recommendations</h2> 
-                        <ul> {preventativeServiceList.specificRecommendations.filter(item => item.title !== "Colorectal Cancer: Screening -- Adults aged 50 to 75 years").map(item => <li key={item.id}>{item.title}</li>)}</ul>
+                        <h2>My Care Plan</h2> 
+                         {preventativeServiceList.specificRecommendations.filter(item => item.title !== "Colorectal Cancer: Screening -- Adults aged 50 to 75 years").map((item) => (
+                             <Accordion>
+                             <Accordion.Item eventKey={item}>
+                                 <Accordion.Header>{item.title}</Accordion.Header>
+                                 <Accordion.Body>
+                                 {item.text}
+                                 </Accordion.Body>
+                             </Accordion.Item>
+                         </Accordion>
+                      ))}
                 </Col>
             </Row> : ''
             }
@@ -160,12 +269,21 @@ function Search() {
                  <Col md={6}>
                         <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1> 
 
-                        <h2>Specific Recommendations</h2> 
-                        <ul> {preventativeServiceList.specificRecommendations.map(item => <li key={item.id}>{item.title}</li>)}</ul>
+                        <h2>My Care Plan</h2> 
+                        { preventativeServiceList.specificRecommendations.map((item) => (
+                            <Accordion>
+                                <Accordion.Item eventKey={item}>
+                                    <Accordion.Header>{item.title}</Accordion.Header>
+                                    <Accordion.Body>
+                                    {item.text}
+                                    </Accordion.Body>
+                                </Accordion.Item>
+                            </Accordion>
+                         ))}
                 </Col>
             </Row> : ''
             }
-            { preventativeServiceList?.generalRecommendations &&
+            {/*preventativeServiceList?.generalRecommendations &&
             <Row>
                  <Col md={6}>
                         <h2>General Recommendations</h2> <ul>
@@ -177,8 +295,8 @@ function Search() {
                         </ul>
                 </Col>
             </Row> 
-            }
-            { preventativeServiceList?.categories &&
+            */}
+            {/*preventativeServiceList?.categories &&
             <Row>
                  <Col md={6}>
                         <h2>Categories</h2> <ul>
@@ -190,8 +308,8 @@ function Search() {
                         </ul>
                 </Col>
             </Row> 
-            }
-            { preventativeServiceList?.tools &&
+            */}
+            {/*preventativeServiceList?.tools &&
             <Row>
                  <Col md={6}>
                         <h2>Tools</h2> <ul>
@@ -203,8 +321,8 @@ function Search() {
                         </ul>
                 </Col>
             </Row> 
-            }
-            { preventativeServiceList?.risks &&
+            */}
+            {/*preventativeServiceList?.risks &&
             <Row>
                  <Col md={6}>
                         <h2>Risks</h2> <ul>
@@ -216,8 +334,8 @@ function Search() {
                         </ul>
                 </Col>
             </Row> 
-            }
-            { preventativeServiceList?.grades &&
+            */}
+            {/*preventativeServiceList?.grades &&
             <Row>
                  <Col md={6}>
                         <h2>grades</h2> <ul>
@@ -229,7 +347,7 @@ function Search() {
                         </ul>
                 </Col>
             </Row> 
-            }
+            */}
         </Container>
     )
 }

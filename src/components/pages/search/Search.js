@@ -160,6 +160,7 @@ function Search() {
             setBMI(bmiValue)
             console.log("BMI retrieval succesful");
         } else {
+            setBMI('')
             console.log("BMI not taken");
             return
         }
@@ -185,6 +186,7 @@ function Search() {
             setHeight(feet_and_inches)
             console.log("Height retrieval succesful");
         } else {
+            setHeight('')
             console.log("Height not taken");
             return
         }
@@ -209,6 +211,8 @@ function Search() {
             setWeight(weight)
             console.log("Weight retrieval succesful");
         } else {
+            setWeight('')
+            setWeightRecored('')
             console.log("Weight not taken");
             return
         }
@@ -234,6 +238,9 @@ function Search() {
             setBloodPressureRecored(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
             console.log("Blood pressure retrieval succesful");
         } else {
+            setSystolicBloodPressure('')
+            setDiastolicBloodPressure('')
+            setBloodPressureRecored('')
             console.log("Blood pressure not taken");
             return
         }

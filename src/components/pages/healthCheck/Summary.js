@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'; 
 import { useDispatch, useSelector } from 'react-redux'
 import { Accordion, Container, Row, Col, Button, Spinner } from "react-bootstrap";
+import Header from '../../header/header'
 import axios from "axios";
 
 
@@ -46,7 +47,8 @@ function Summary() {
         <Container fluid className="content-block">
          {submitComplete ? (
             <>
-                <h1 style={{ paddingBottom: "30px" }}>{patientName}</h1>
+                <Header />
+                <h1 style={{ paddingTop: "20px", paddingBottom:"20px"}}>{patientName}</h1>
                 <h2 style={{ paddingBottom: "30px" }}>Get Started: Preventative Health Check</h2>
 
                 {  preventativeServiceList?.specificRecommendations?.length > 0 ?

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
 import { Accordion, Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import Header from '../../header/header'
 import axios from "axios";
-
+import '../../../types/state';
+import * as USPSTF from '../../../types/uspstf';
 
 function Summary() {
 
@@ -15,7 +16,11 @@ function Summary() {
     const [submitComplete, setSubmitComplete] = useState(false);
 
 
-    const [preventativeServiceList, setPreventativeServiceList] = useState([]);
+    const [preventativeServiceList, setPreventativeServiceList] = useState<USPSTF.APIResponse>({
+        specificRecommendations: [],
+        grades: {},
+        generalRecommendations: {}
+    });
 
     useEffect(() => {
         const fetchPreventativeServiceData = async () => {
@@ -38,11 +43,11 @@ function Summary() {
                 setSubmitComplete(true);
             } else if(response.status === 404){
                 console.log("Preventative Service Call not Succesful")
-            }      
+            }
           };
           fetchPreventativeServiceData();
     }, [patientGender, patientAge, patientSmokingStatus]);
-    
+
     return (
         <Container fluid className="content-block">
          {submitComplete ? (
@@ -56,7 +61,7 @@ function Summary() {
                     <Col md={6}>
                             { preventativeServiceList.specificRecommendations.map((item) => (
                                 <Accordion>
-                                    <Accordion.Item eventKey={item.id} key={item.id}>
+                                    <Accordion.Item eventKey={item.id.toString()} key={item.id}>
                                         <Accordion.Header>{item.title}</Accordion.Header>
                                         <Accordion.Body>
                                         {item.text}

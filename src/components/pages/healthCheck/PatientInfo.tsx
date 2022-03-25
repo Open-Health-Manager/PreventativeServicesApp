@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
+import { Container, Button, Spinner } from "react-bootstrap";
 import axios from "axios";
 import { getPatientID, getDOB, getGender, getPatientAge, getPatientName, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getTobaccoUsage} from '../../../store/patientSlice'
 
@@ -19,7 +19,7 @@ function PatientInfo() {
     const [patientID, setPatientID] = useState('');
     const [gender, setGender] = useState('');
     const [patientName, setPatientName] = useState('');
-    const [age, setAge] = useState('');
+    const [age, setAge] = useState<number>(null);
     const [dob, setDOB] = useState('');
 
     const [weight, setWeight] = useState('');
@@ -63,19 +63,19 @@ function PatientInfo() {
                 setSubmitComplete(true);
             } else if(response.status === 404){
                 console.log("Patient not Found")
-            }      
+            }
           };
           fetchPatientData();
     }, [patientUserName]);
 
 
-     //calculates the current age from data of birth 
+     //calculates the current age from data of birth
      const calculate_age = (dob1) => {
         var today = new Date();
         var birthDate = new Date(dob1);  // create a date object directly from `dob1` argument
-        var age_now = today.getFullYear() - birthDate.getFullYear(); 
+        var age_now = today.getFullYear() - birthDate.getFullYear();
         var m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) 
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate()))
         {
             age_now--;
         }
@@ -173,7 +173,7 @@ function PatientInfo() {
             data: {
                 patientID: patientID
             },
-        })           
+        })
         var data = response.data;
         console.log(data)
         var smoking_status_entry = data.data.total;
@@ -209,7 +209,7 @@ function PatientInfo() {
         dispatch(getSystolicBloodPressure(systolicbloodpressure))
         dispatch(getTobaccoUsage(smokingStatus))
         history.push("/health/summary");
-    } 
+    }
 
 
     return (

@@ -1,8 +1,8 @@
-import React, { useState } from 'react'; 
+import React, { useState } from 'react';
 import { Accordion, Container, Row, Col, Button } from "react-bootstrap";
 import { useForm } from 'react-hook-form';
 import axios from "axios";
-
+import * as USPSTF from '../../../types/uspstf';
 
 import "./Search.css"; // Import styling
 
@@ -13,8 +13,12 @@ function Search() {
         mode: 'onTouched',
     });
 
-    const [preventativeServiceList, setPreventativeServiceList] = useState([]);
-    
+    const [preventativeServiceList, setPreventativeServiceList] = useState<USPSTF.APIResponse>({
+        specificRecommendations: [],
+        grades: {},
+        generalRecommendations: {}
+    });
+
     const [gender, setGender] = useState('');
     const [age, setAge] = useState('');
     const [dob, setDOB] = useState('');
@@ -58,13 +62,13 @@ function Search() {
         }
     }
 
-    //calculates the current age from data of birth 
+    //calculates the current age from data of birth
     const calculate_age = (dob1) => {
         var today = new Date();
         var birthDate = new Date(dob1);  // create a date object directly from `dob1` argument
-        var age_now = today.getFullYear() - birthDate.getFullYear(); 
+        var age_now = today.getFullYear() - birthDate.getFullYear();
         var m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) 
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate()))
         {
             age_now--;
         }
@@ -92,7 +96,7 @@ function Search() {
     }
 
 
-    //make query to search for smoking status of Patient 
+    //make query to search for smoking status of Patient
     const smoking_status = async (patientID) => {
         console.log(patientID)
         const response = await axios({
@@ -101,7 +105,7 @@ function Search() {
             data: {
                 patientID: patientID
             },
-        })           
+        })
         var data = response.data;
         console.log(data)
         var smoking_status_entry = data.data.total;
@@ -118,14 +122,14 @@ function Search() {
         }
     }
 
-    //make query to preventative services to provide list of potential services for patient to front-end client 
+    //make query to preventative services to provide list of potential services for patient to front-end client
     const preventatives_services = async (gender, age, smokingStatus, colonoscopyCheck) => {
         setGender(gender);
         setAge(age);
         setSmokingStatus(smokingStatus);
         setColonoscopy_Procedure(colonoscopyCheck)
         console.log(gender);
-        console.log(age);   
+        console.log(age);
         console.log(smokingStatus);
         console.log(colonoscopyCheck)
         const response = await axios({
@@ -136,7 +140,7 @@ function Search() {
                 age: age,
                 smokingStatus: smokingStatus
             },
-        })         
+        })
         var data = response.data;
         console.log(data)
         setPreventativeServiceList(data)
@@ -245,7 +249,7 @@ function Search() {
             return
         }
     }
-    
+
 
     return (
         <Container fluid className="content-block">
@@ -273,16 +277,16 @@ function Search() {
                     { bloodpressureRecored && <h3>Date Blood Pressure Recorded: {bloodpressureRecored}</h3> }
                     { smokingStatus && <h3>Smoking Status: {smokingStatus} </h3> }
                 </Col>
-            </Row> 
+            </Row>
             {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure == "Y" ?
             <Row>
                  <Col md={6}>
-                        <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1> 
+                        <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1>
 
-                        <h2>My Care Plan</h2> 
+                        <h2>My Care Plan</h2>
                          {preventativeServiceList.specificRecommendations.filter(item => item.title !== "Colorectal Cancer: Screening -- Adults aged 50 to 75 years").map((item) => (
                              <Accordion>
-                             <Accordion.Item eventKey={item}>
+                             <Accordion.Item eventKey={item.id.toString()}>
                                  <Accordion.Header>{item.title}</Accordion.Header>
                                  <Accordion.Body>
                                  {item.text}
@@ -296,12 +300,12 @@ function Search() {
             {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure == "N" ?
             <Row>
                  <Col md={6}>
-                        <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1> 
+                        <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1>
 
-                        <h2>My Care Plan</h2> 
+                        <h2>My Care Plan</h2>
                         { preventativeServiceList.specificRecommendations.map((item) => (
                             <Accordion>
-                                <Accordion.Item eventKey={item}>
+                                <Accordion.Item eventKey={item.id.toString()}>
                                     <Accordion.Header>{item.title}</Accordion.Header>
                                     <Accordion.Body>
                                     {item.text}
@@ -316,66 +320,66 @@ function Search() {
             <Row>
                  <Col md={6}>
                         <h2>General Recommendations</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.generalRecommendations).map((item) => (
                                 <li key={item}>{preventativeServiceList.generalRecommendations[item].title}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
             {/*preventativeServiceList?.categories &&
             <Row>
                  <Col md={6}>
                         <h2>Categories</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.categories).map((item) => (
                                 <li key={item}>{preventativeServiceList.categories[item].name}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
             {/*preventativeServiceList?.tools &&
             <Row>
                  <Col md={6}>
                         <h2>Tools</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.tools).map((item) => (
                                 <li key={item}>{preventativeServiceList.tools[item].title}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
             {/*preventativeServiceList?.risks &&
             <Row>
                  <Col md={6}>
                         <h2>Risks</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.risks).map((item) => (
                                 <li key={item}>{preventativeServiceList.risks[item].name}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
             {/*preventativeServiceList?.grades &&
             <Row>
                  <Col md={6}>
                         <h2>grades</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.grades).map((item) => (
                                 <li key={item}>{item}: {preventativeServiceList.grades[item]}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
         </Container>
     )

@@ -16,7 +16,7 @@ function HealthCheck() {
                 <Route exact path='/health/history' component={History} />
             </Switch>
        </Router>
-    ) 
+    )
 }
 
 

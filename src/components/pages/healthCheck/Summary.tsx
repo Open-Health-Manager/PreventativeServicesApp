@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import { Accordion, Container, Row, Col, Button, Spinner } from "react-bootstrap";
+import { Accordion, Container, Row, Col, Spinner } from "react-onsenui";
 import Header from '../../header/header'
 import axios from "axios";
 import '../../../types/state';

@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom'
 import { useForm } from 'react-hook-form';
 import { getPatientUserName } from '../../../store/patientSlice'
 
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Row, Col, Button } from "react-onsenui";
 
 function UserSearch() {
     const dispatch = useDispatch()

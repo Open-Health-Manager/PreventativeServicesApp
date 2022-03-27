@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
-import { Accordion, Container, Row, Col, Button } from "react-bootstrap";
-import { useForm } from 'react-hook-form';
+import { Input, Page, Accordion, Row, Col, Button } from "react-onsenui";
+import { Controller, useForm } from 'react-hook-form';
 import axios from "axios";
 import * as USPSTF from '../../../types/uspstf';
 
-import "./Search.css"; // Import styling
+//import "./Search.css"; // Import styling
 
+type SearchFormInput = {
+    userName: string;
+};
 
 function Search() {
 
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { control, handleSubmit, formState: { errors } } = useForm<SearchFormInput>({
         mode: 'onTouched',
+        defaultValues: {
+            userName: ''
+        }
     });
 
     const [preventativeServiceList, setPreventativeServiceList] = useState<USPSTF.APIResponse>({
@@ -185,7 +191,7 @@ function Search() {
             var height = Math.round(data.data.entry[0].resource.valueQuantity.value / 2.54)
             var feet = Math.floor(height/12)
             var inches = (height - (feet * 12))
-            var feet_and_inches = feet + " ft" + " " + inches + " inches"
+            var feet_and_inches = feet + " ft " + inches + " inches"
             console.log(feet_and_inches)
             setHeight(feet_and_inches)
             console.log("Height retrieval succesful");
@@ -250,19 +256,14 @@ function Search() {
         }
     }
 
-
     return (
-        <Container fluid className="content-block">
-            <Row style={{ paddingTop: "20px" }}>
-                <Col md={6}>
-                    <h1>Preventative Health Check</h1>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <input type="text" className="form-control" {...register("userName", { required: true })}/>
-                        {errors.patientID && <p className="error-text">user name is required</p>}
-                        <Button variant='form' type="submit">Submit</Button>
-                    </form>
-                </Col>
-            </Row>
+        <Page>
+            <h1>Preventative Health Check</h1>
+            <form onSubmit={(e) => { console.log('hello'); handleSubmit(onSubmit)(e); }}>
+                <p><Controller name="userName" control={control} render={({field}) => <Input type="text" placeholder="Username" float {...field}/>} /></p>
+                {errors.userName && <p className="error-text">user name is required</p>}
+                <p><Button modifier="cta" onClick={handleSubmit(onSubmit)}>Lookup</Button></p>
+            </form>
             <Row>
                 <Col md={6}>
                     { dob && <h1 style={{paddingTop:"30px"}}>Patient Info:</h1> }
@@ -278,7 +279,7 @@ function Search() {
                     { smokingStatus && <h3>Smoking Status: {smokingStatus} </h3> }
                 </Col>
             </Row>
-            {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure == "Y" ?
+            {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure === "Y" ?
             <Row>
                  <Col md={6}>
                         <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1>
@@ -297,7 +298,7 @@ function Search() {
                 </Col>
             </Row> : ''
             }
-            {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure == "N" ?
+            {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure === "N" ?
             <Row>
                  <Col md={6}>
                         <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1>
@@ -381,7 +382,7 @@ function Search() {
                 </Col>
             </Row>
             */}
-        </Container>
+        </Page>
     )
 }
 

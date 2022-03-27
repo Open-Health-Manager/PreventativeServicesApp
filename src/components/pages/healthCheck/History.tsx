@@ -1,13 +1,13 @@
 import React from 'react'
 import Header from '../../header/header'
-import { Container } from "react-bootstrap";
+import { Container } from "react-onsenui";
 
 
 
 function History() {
     return (
         <div>
-             <Container fluid className="content-block"> 
+             <Container fluid className="content-block">
                 <Header />
                 <h1>History</h1>
             </Container>

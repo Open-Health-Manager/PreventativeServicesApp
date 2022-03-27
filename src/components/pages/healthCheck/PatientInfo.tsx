@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { Container, Button, Spinner } from "react-bootstrap";
+import { Container, Button, Spinner } from "react-onsenui";
 import axios from "axios";
 import { getPatientID, getDOB, getGender, getPatientAge, getPatientName, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getTobaccoUsage} from '../../../store/patientSlice'
 

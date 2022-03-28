@@ -5,6 +5,9 @@ import Header from '../../header/header'
 import axios from "axios";
 
 
+import "./Summary.css"; // Import styling
+
+
 function Summary() {
 
     const dispatch = useDispatch()
@@ -14,8 +17,7 @@ function Summary() {
     const patientSmokingStatus =  useSelector(state => state.patient.tobaccoUsage)
     const [submitComplete, setSubmitComplete] = useState(false);
 
-
-    const [preventativeServiceList, setPreventativeServiceList] = useState([]);
+    const [specificRecommendationsList, setSpecificRecommendationsList] = useState([]);
 
     useEffect(() => {
         const fetchPreventativeServiceData = async () => {
@@ -33,7 +35,7 @@ function Summary() {
             });
             if (response.status === 200){
                 var data = response.data;
-                setPreventativeServiceList(data)
+                prioritizeList(data);
                 console.log("Preventative Service Call Succesful", data)
                 setSubmitComplete(true);
             } else if(response.status === 404){
@@ -42,6 +44,43 @@ function Summary() {
           };
           fetchPreventativeServiceData();
     }, [patientGender, patientAge, patientSmokingStatus]);
+
+    const prioritizeList = (data) => {
+        const specificRecommendations = data.specificRecommendations
+        console.log("initialize specificRecommendations", specificRecommendations)
+        
+        const prioritizeSet = new Set([1921]);
+
+        const newArr = specificRecommendations.sort((a, b) => 
+            prioritizeSet.has(b.id) - prioritizeSet.has(a.id)
+        );
+        
+        console.log(newArr) // Note that the original array has been sorted in-place
+
+        //Find index of specific array object in specificRecommendations using findIndex method.    
+        const objIndex = specificRecommendations.findIndex((obj => obj.id == 1921));
+
+        //Log object from specificRecommendations to console
+        console.log("Before update: ", specificRecommendations[objIndex])
+
+        //Update object's title and text property.
+        specificRecommendations[objIndex].title = "Get Blood Pressure Checked"
+        specificRecommendations[objIndex].text = "Hypertension is a major contributing risk factor for heart attack, stroke, and chronic risk disease. \n Screening for and treatment of hypertension reduces the likelihood of heart attack, stroke, and chronic kidney disease."
+
+        //Log updated object from specificRecommendations to console again.
+        console.log("After update: ", specificRecommendations[objIndex])        
+
+        console.log("updated specificRecommendations", specificRecommendations)
+
+        setSpecificRecommendationsList(specificRecommendations)
+    }
+
+
+    const filterItem = (id) => {
+        console.log(id)
+        const filteredItem = specificRecommendationsList.filter(item => item.id !== id)
+        setSpecificRecommendationsList(filteredItem)
+    } 
     
     return (
         <Container fluid className="content-block">
@@ -51,15 +90,20 @@ function Summary() {
                 <h1 style={{ paddingTop: "20px", paddingBottom:"20px"}}>{patientName}</h1>
                 <h2 style={{ paddingBottom: "30px" }}>Get Started: Preventative Health Check</h2>
 
-                {  preventativeServiceList?.specificRecommendations?.length > 0 ?
+                {  specificRecommendationsList?.length > 0 ?
                 <Row>
                     <Col md={6}>
-                            { preventativeServiceList.specificRecommendations.map((item) => (
+                            { specificRecommendationsList.map((item) => (
                                 <Accordion>
                                     <Accordion.Item eventKey={item.id} key={item.id}>
                                         <Accordion.Header>{item.title}</Accordion.Header>
                                         <Accordion.Body>
-                                        {item.text}
+                                            <div className="accordion_container">
+                                                <p>{item.text}</p>
+                                                <div className="center_button">
+                                                    <Button variant='ignore' type="submit" onClick={() => filterItem(item.id)}>Ignore</Button>
+                                                </div>
+                                            </div>
                                         </Accordion.Body>
                                     </Accordion.Item>
                                 </Accordion>

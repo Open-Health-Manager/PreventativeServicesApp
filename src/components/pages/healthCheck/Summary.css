@@ -1,0 +1,22 @@
+.btn-ignore {
+  background: #0b2338;
+  color: #ffe800;
+  font-size: 18px;
+  font-weight: bold;
+  border: 1px solid #ffffff;
+  border-radius: 0px;
+  text-transform: uppercase;
+  width: 150px;
+  height: 45px;
+  margin-top: 20px;
+}
+
+.btn-ignore:hover {
+  color: #ffe800;
+}
+
+.center_button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

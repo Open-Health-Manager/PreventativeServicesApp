@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Input, Page, Accordion, Row, Col, Button } from "react-onsenui";
+import { Input, Page, Accordion, List, ListHeader, ListItem, Row, Col, Button } from "react-onsenui";
 import { Controller, useForm } from 'react-hook-form';
 import axios from "axios";
 import * as USPSTF from '../../../types/uspstf';
@@ -43,18 +43,18 @@ function Search() {
     const [colonoscopy_procedure, setColonoscopy_Procedure] = useState('');
 
     const onSubmit = async (data) => {
-        console.log(data.userName)
+        console.log(`Looking up user "${data.userName}"`);
         const response = await axios({
             method: "POST",
             url: "http://localhost:4002/search_username",
             data: data
         });
         if (response.status === 200){
-            var data = response.data;
-            console.log("Patient was Found", data)
-            var patientID = data.entry[0].resource.id
-            var gender = data.entry[0].resource.gender;
-            var dob = data.entry[0].resource.birthDate;
+            const responseData = response.data;
+            console.log("Patient was Found", responseData)
+            const patientID = responseData.entry[0].resource.id
+            const gender = responseData.entry[0].resource.gender;
+            const dob = responseData.entry[0].resource.birthDate;
             console.log(patientID)
             console.log(gender)
             setDOB(new Date(dob).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
@@ -256,66 +256,64 @@ function Search() {
         }
     }
 
+    const havePatientData = !!(dob || gender || age || height || weight || weightRecorded || bmi || (systolicbloodpressure && diastolicbloodpressure) || bloodpressureRecored || smokingStatus);
+
     return (
         <Page>
             <h1>Preventative Health Check</h1>
-            <form onSubmit={(e) => { console.log('hello'); handleSubmit(onSubmit)(e); }}>
-                <p><Controller name="userName" control={control} render={({field}) => <Input type="text" placeholder="Username" float {...field}/>} /></p>
-                {errors.userName && <p className="error-text">user name is required</p>}
-                <p><Button modifier="cta" onClick={handleSubmit(onSubmit)}>Lookup</Button></p>
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <List>
+                    <ListItem>
+                        <Controller name="userName" control={control} render={({field}) => <Input type="text" placeholder="Username" float {...field}/>} />
+                        {errors.userName && <div className="list-item__subtitle">user name is required</div>}
+                    </ListItem>
+                    <ListItem>
+                        <Button modifier="cta" onClick={handleSubmit(onSubmit)}>Lookup</Button>
+                    </ListItem>
+                </List>
             </form>
-            <Row>
-                <Col md={6}>
-                    { dob && <h1 style={{paddingTop:"30px"}}>Patient Info:</h1> }
-                    { dob && <h3>Date of Birth: {dob} </h3> }
-                    { gender && <h3>Sex assigned at Birth: {gender} </h3> }
-                    { age && <h3>Age: {age} </h3> }
-                    { height && <h3>Height: {height} </h3> }
-                    { weight && <h3>Weight: {weight} lbs</h3> }
-                    { weightRecorded && <h3>Date Weight Recorded: {weightRecorded}</h3> }
-                    { bmi && <h3>BMI: {bmi} kg/m2</h3> }
-                    { systolicbloodpressure && diastolicbloodpressure && <h3>Blood pressure: {systolicbloodpressure}/{diastolicbloodpressure} mmHg</h3> }
-                    { bloodpressureRecored && <h3>Date Blood Pressure Recorded: {bloodpressureRecored}</h3> }
-                    { smokingStatus && <h3>Smoking Status: {smokingStatus} </h3> }
-                </Col>
-            </Row>
-            {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure === "Y" ?
-            <Row>
-                 <Col md={6}>
-                        <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1>
-
-                        <h2>My Care Plan</h2>
+            { havePatientData ?
+                <List>
+                    <ListHeader>Patient Info:</ListHeader>
+                    { dob && <ListItem>Date of Birth: {dob}</ListItem> }
+                    { gender && <ListItem>Sex assigned at Birth: {gender}</ListItem> }
+                    { age && <ListItem>Age: {age} </ListItem> }
+                    { height && <ListItem>Height: {height} </ListItem> }
+                    { weight && <ListItem>Weight: {weight} lbs</ListItem> }
+                    { weightRecorded && <ListItem>Date Weight Recorded: {weightRecorded}</ListItem> }
+                    { bmi && <ListItem>BMI: {bmi} kg/m2</ListItem> }
+                    { (systolicbloodpressure && diastolicbloodpressure) && <ListItem>Blood pressure: {systolicbloodpressure}/{diastolicbloodpressure} mmHg</ListItem> }
+                    { bloodpressureRecored && <ListItem>Date Blood Pressure Recorded: {bloodpressureRecored}</ListItem> }
+                    { smokingStatus && <ListItem>Smoking Status: {smokingStatus} </ListItem> }
+                </List>
+            : false }
+            { preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure === "Y" ?
+                <>
+                    <h1>Preventative Services List</h1>
+                    <List>
+                        <ListHeader>My Care Plan</ListHeader>
                          {preventativeServiceList.specificRecommendations.filter(item => item.title !== "Colorectal Cancer: Screening -- Adults aged 50 to 75 years").map((item) => (
-                             <Accordion>
-                             <Accordion.Item eventKey={item.id.toString()}>
-                                 <Accordion.Header>{item.title}</Accordion.Header>
-                                 <Accordion.Body>
-                                 {item.text}
-                                 </Accordion.Body>
-                             </Accordion.Item>
-                         </Accordion>
+                             <ListItem expandable key={item.id}>
+                                 <div className="left">{item.title}</div>
+                                 <div className="expandable-content">{item.text}</div>
+                             </ListItem>
                       ))}
-                </Col>
-            </Row> : ''
+                    </List>
+                </> : ''
             }
             {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure === "N" ?
-            <Row>
-                 <Col md={6}>
-                        <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1>
-
-                        <h2>My Care Plan</h2>
+            <>
+                <h1>Preventative Services List</h1>
+                <List>
+                    <ListHeader>My Care Plan</ListHeader>
                         { preventativeServiceList.specificRecommendations.map((item) => (
-                            <Accordion>
-                                <Accordion.Item eventKey={item.id.toString()}>
-                                    <Accordion.Header>{item.title}</Accordion.Header>
-                                    <Accordion.Body>
-                                    {item.text}
-                                    </Accordion.Body>
-                                </Accordion.Item>
-                            </Accordion>
+                            <ListItem expandable key={item.id}>
+                                <div className="left">{item.title}</div>
+                                <div className="expandable-content">{item.text}</div>
+                            </ListItem>
                          ))}
-                </Col>
-            </Row> : ''
+                </List>
+            </> : ''
             }
             {/*preventativeServiceList?.generalRecommendations &&
             <Row>

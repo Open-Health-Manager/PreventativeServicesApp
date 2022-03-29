@@ -14,6 +14,7 @@ const patientSlice = createSlice({
         weightRecorded: "",
         diastolicBloodPressure: "",
         systolicBloodPressure: "",
+        bloodPressureRecorded: "",
         pregnancyStatus: "",
         tobaccoUsage: "",
         sexuallyActive: ""
@@ -30,12 +31,13 @@ const patientSlice = createSlice({
         getWeightRecorded: (state, action) => { state.weightRecorded = action.payload },
         getDiastolicBloodPressure: (state, action) => { state.diastolicBloodPressure = action.payload },
         getSystolicBloodPressure: (state, action ) => { state.systolicBloodPressure = action.payload },
+        getBloodPressureRecorded: (state, action) => { state.bloodPressureRecorded = action.payload },
         getPregnancyStatus: (state, action) => { state.pregnancyStatus = action.payload },
         getTobaccoUsage: (state, action) => { state.tobaccoUsage = action.payload },
         getSexualActivity: (state, action) => { state.sexuallyActive = action.payload }, 
     }
 })
 
-export const { getPatientUserName, getPatientID, getPatientAge, getPatientName, getDOB, getGender, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getPregnancyStatus, getTobaccoUsage, getSexualActivity } = patientSlice.actions
+export const { getPatientUserName, getPatientID, getPatientAge, getPatientName, getDOB, getGender, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getBloodPressureRecorded, getPregnancyStatus, getTobaccoUsage, getSexualActivity } = patientSlice.actions
 
 export default patientSlice

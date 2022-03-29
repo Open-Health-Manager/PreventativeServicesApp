@@ -1,0 +1,11 @@
+.care_plan_container {
+  padding-top: 15px;
+}
+
+.care_plan_container p {
+  color: white;
+}
+
+.reading_header {
+  font-weight: bold;
+}

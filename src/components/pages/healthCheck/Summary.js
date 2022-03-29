@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Accordion, Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import Header from '../../header/header'
 import axios from "axios";
+import { addSpecificRecommendations, deleteSpecificRecommendation } from '../../../store/specificRecommendationsSlice';
 
 
 import "./Summary.css"; // Import styling
@@ -15,6 +16,7 @@ function Summary() {
     const patientAge =  useSelector(state => state.patient.age)
     const patientGender =  useSelector(state => state.patient.gender)
     const patientSmokingStatus =  useSelector(state => state.patient.tobaccoUsage)
+    const RecommendationsList = useSelector(state => state.specificRecommendations.RecommendationsList)
     const [submitComplete, setSubmitComplete] = useState(false);
 
     const [specificRecommendationsList, setSpecificRecommendationsList] = useState([]);
@@ -73,6 +75,7 @@ function Summary() {
         console.log("updated specificRecommendations", specificRecommendations)
 
         setSpecificRecommendationsList(specificRecommendations)
+        dispatch(addSpecificRecommendations(specificRecommendations))
     }
 
 
@@ -80,6 +83,7 @@ function Summary() {
         console.log(id)
         const filteredItem = specificRecommendationsList.filter(item => item.id !== id)
         setSpecificRecommendationsList(filteredItem)
+        dispatch(deleteSpecificRecommendation({id}))
     } 
     
     return (
@@ -90,11 +94,11 @@ function Summary() {
                 <h1 style={{ paddingTop: "20px", paddingBottom:"20px"}}>{patientName}</h1>
                 <h2 style={{ paddingBottom: "30px" }}>Get Started: Preventative Health Check</h2>
 
-                {  specificRecommendationsList?.length > 0 ?
+                {  RecommendationsList[0]?.length > 0 ?
                 <Row>
                     <Col md={6}>
-                            { specificRecommendationsList.map((item) => (
-                                <Accordion>
+                            { RecommendationsList[0].map((item) => (
+                                <Accordion key={item.id}>
                                     <Accordion.Item eventKey={item.id} key={item.id}>
                                         <Accordion.Header>{item.title}</Accordion.Header>
                                         <Accordion.Body>

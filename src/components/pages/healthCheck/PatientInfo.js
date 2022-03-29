@@ -3,9 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import axios from "axios";
-import { getPatientID, getDOB, getGender, getPatientAge, getPatientName, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getTobaccoUsage} from '../../../store/patientSlice'
-
-
+import { getPatientID, getDOB, getGender, getPatientAge, getPatientName, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getBloodPressureRecorded, getTobaccoUsage} from '../../../store/patientSlice'
 
 import "./PatientInfo.css"; // Import styling
 
@@ -207,6 +205,7 @@ function PatientInfo() {
         dispatch(getWeightRecorded(weightRecorded))
         dispatch(getDiastolicBloodPressure(diastolicbloodpressure))
         dispatch(getSystolicBloodPressure(systolicbloodpressure))
+        dispatch(getBloodPressureRecorded(bloodpressureRecored))
         dispatch(getTobaccoUsage(smokingStatus))
         history.push("/health/summary");
     } 

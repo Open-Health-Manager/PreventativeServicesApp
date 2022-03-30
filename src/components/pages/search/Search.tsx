@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Input, Page, Accordion, List, ListHeader, ListItem, Row, Col, Button } from "react-onsenui";
+import { Input, Page, List, ListHeader, ListItem, Button, ProgressCircular } from "react-onsenui";
 import { Controller, useForm } from 'react-hook-form';
 import axios from "axios";
 import * as USPSTF from '../../../types/uspstf';
@@ -18,6 +18,9 @@ function Search() {
             userName: ''
         }
     });
+
+    const [userLookupError, setUserLookupError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const [preventativeServiceList, setPreventativeServiceList] = useState<USPSTF.APIResponse>({
         specificRecommendations: [],
@@ -43,29 +46,43 @@ function Search() {
     const [colonoscopy_procedure, setColonoscopy_Procedure] = useState('');
 
     const onSubmit = async (data) => {
+        // Blank the lookup error for now
+        setUserLookupError('');
+        setLoading(true);
         console.log(`Looking up user "${data.userName}"`);
         const response = await axios({
             method: "POST",
             url: "http://localhost:4002/search_username",
             data: data
         });
-        if (response.status === 200){
+        if (response.status === 200 && response.data.entry?.length > 0) {
             const responseData = response.data;
             console.log("Patient was Found", responseData)
             const patientID = responseData.entry[0].resource.id
             const gender = responseData.entry[0].resource.gender;
             const dob = responseData.entry[0].resource.birthDate;
-            console.log(patientID)
-            console.log(gender)
+            console.log(`Patient ID = ${patientID}`)
+            console.log(`Gender = ${gender}`)
             setDOB(new Date(dob).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
-            await getBloodPressure(patientID)
-            await getBMI(patientID)
-            await getHeight(patientID)
-            await getWeight(patientID)
-            await preventatives_services(gender, calculate_age(dob), await smoking_status(patientID), await colonoscopy_check(patientID));
-        } else if(response.status === 404){
-            console.log("Patient not Found")
+            try {
+                // Do the stuff we can do in parallel in parallel
+                await Promise.all([
+                    getBloodPressure(patientID),
+                    getBMI(patientID),
+                    getHeight(patientID),
+                    getWeight(patientID)
+                ]);
+                await preventatives_services(gender, calculate_age(dob), await smoking_status(patientID), await colonoscopy_check(patientID));
+            } catch (ex) {
+                console.log('exception loading data:');
+            }
+        } else if ((response.status === 200 && !('entry' in response.data && response.data.entry.length > 0)) || response.status === 404) {
+            console.log("Patient not found");
+            setUserLookupError(`User ${data.userName} not found.`);
+        } else {
+            setUserLookupError('An unknown error happened while looking up patient data.');
         }
+        setLoading(false);
     }
 
     //calculates the current age from data of birth
@@ -264,12 +281,14 @@ function Search() {
             <form onSubmit={handleSubmit(onSubmit)}>
                 <List>
                     <ListItem>
-                        <Controller name="userName" control={control} render={({field}) => <Input type="text" placeholder="Username" float {...field}/>} />
+                        <Controller name="userName" control={control} render={({field}) => <Input type="text" autocomplete="username" autocapitalize="off" disabled={loading} placeholder="Username" float {...field}/>} />
                         {errors.userName && <div className="list-item__subtitle">user name is required</div>}
+                        <div className="list-item__subtitle">{userLookupError}</div>
                     </ListItem>
-                    <ListItem>
-                        <Button modifier="cta" onClick={handleSubmit(onSubmit)}>Lookup</Button>
-                    </ListItem>
+                    { loading ?
+                        <ListItem><div className="left"><ProgressCircular indeterminate/></div><div className="center">Loading patient data...</div></ListItem>
+                        : <ListItem><div className="right"><Button modifier="cta" onClick={handleSubmit(onSubmit)}>Lookup</Button></div></ListItem>
+                    }
                 </List>
             </form>
             { havePatientData ?

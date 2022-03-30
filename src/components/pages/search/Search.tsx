@@ -29,7 +29,8 @@ function Search() {
     });
 
     const [gender, setGender] = useState('');
-    const [age, setAge] = useState('');
+    // Currently negative numbers mean "invalid/unknown" - also NaN
+    const [age, setAge] = useState(-1);
     const [dob, setDOB] = useState('');
 
     const [weight, setWeight] = useState('');
@@ -296,7 +297,7 @@ function Search() {
                     <ListHeader>Patient Info:</ListHeader>
                     { dob && <ListItem>Date of Birth: {dob}</ListItem> }
                     { gender && <ListItem>Sex assigned at Birth: {gender}</ListItem> }
-                    { age && <ListItem>Age: {age} </ListItem> }
+                    { (age >= 0) && <ListItem>Age: {age} </ListItem> }
                     { height && <ListItem>Height: {height} </ListItem> }
                     { weight && <ListItem>Weight: {weight} lbs</ListItem> }
                     { weightRecorded && <ListItem>Date Weight Recorded: {weightRecorded}</ListItem> }

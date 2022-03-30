@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'; 
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
+import { useForm } from "react-hook-form";
 import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
 import axios from "axios";
-import { getPatientID, getDOB, getGender, getPatientAge, getPatientName, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getBloodPressureRecorded, getTobaccoUsage} from '../../../store/patientSlice'
+import { getPatientID, getDOB, getGender, getPatientAge, getPatientName, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getBloodPressureRecorded, getPregnancyStatus, getTobaccoUsage, getSexualActivity} from '../../../store/patientSlice'
 
 import "./PatientInfo.css"; // Import styling
 
@@ -13,23 +14,37 @@ function PatientInfo() {
     const history = useHistory()
     const patientUserName = useSelector(state => state.patient.patientUserName)
     const [submitComplete, setSubmitComplete] = useState(false);
-
+   
     const [patientID, setPatientID] = useState('');
-    const [gender, setGender] = useState('');
     const [patientName, setPatientName] = useState('');
     const [age, setAge] = useState('');
-    const [dob, setDOB] = useState('');
 
-    const [weight, setWeight] = useState('');
-    const [weightRecorded, setWeightRecored] = useState('');
+    const { register, handleSubmit, setValue } = useForm({
+        defaultValues: {
+            pregnancyStatus: "N",
+            sexualActivityStatus: "N"
+        }
+    });
+    const [disabled, setDisable] = useState(true);
+    const onSubmit = (data) => {
+        console.log(data)
+        dispatch(getPatientID(patientID))
+        dispatch(getDOB(data.dob))
+        dispatch(getGender(data.gender))
+        dispatch(getPatientAge(age))
+        dispatch(getPatientName(patientName))
+        dispatch(getPatientHeight(data.height))
+        dispatch(getPatientWeight(data.weight))
+        dispatch(getWeightRecorded(data.weightRecorded))
+        dispatch(getDiastolicBloodPressure(data.diastolicBloodPressure))
+        dispatch(getSystolicBloodPressure(data.systolicBloodPressure))
+        dispatch(getBloodPressureRecorded(data.bloodPressureRecorded))
+        dispatch(getPregnancyStatus(data.pregnancyStatus))
+        dispatch(getTobaccoUsage(data.smokingStatus))
+        dispatch(getSexualActivity(data.sexualActivityStatus))
+        history.push("/health/summary");
+    }
 
-    const [height, setHeight] = useState('');
-
-    const [systolicbloodpressure, setSystolicBloodPressure] = useState('');
-    const [diastolicbloodpressure, setDiastolicBloodPressure] = useState('');
-    const [bloodpressureRecored, setBloodPressureRecored] = useState('');
-
-    const [smokingStatus, setSmokingStatus] = useState('');
 
     useEffect(() => {
         const fetchPatientData = async () => {
@@ -50,10 +65,11 @@ function PatientInfo() {
                 var dataDOB = data.entry[0].resource.birthDate;
                 var dataName = data.entry[0].resource.name[0].given[0]
                 setPatientName(dataName)
+                setValue('patientName', dataName)
                 setPatientID(dataPatientID)
-                setGender(dataGender);
+                setValue('gender', dataGender)
                 setAge(calculate_age(dataDOB))
-                setDOB(new Date(dataDOB).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+                setValue("dob", new Date(dataDOB).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
                 await getBloodPressure(dataPatientID)
                 await getWeight(dataPatientID)
                 await getHeight(dataPatientID)
@@ -96,14 +112,14 @@ function PatientInfo() {
             console.log(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
             var systolic = data.data.entry[0].resource.component[0].valueQuantity.value
             var diastolic = data.data.entry[0].resource.component[1].valueQuantity.value
-            setSystolicBloodPressure(systolic)
-            setDiastolicBloodPressure(diastolic)
-            setBloodPressureRecored(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
+            setValue('systolicBloodPressure', systolic)
+            setValue('diastolicBloodPressure', diastolic)
+            setValue('bloodPressureRecorded', new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
             console.log("Blood pressure retrieval succesful");
         } else {
-            setSystolicBloodPressure('')
-            setDiastolicBloodPressure('')
-            setBloodPressureRecored('')
+            setValue('systolicBloodPressure', '')
+            setValue('diastolicBloodPressure', '')
+            setValue('bloodPressureRecorded', '')
             console.log("Blood pressure not taken");
             return
         }
@@ -123,12 +139,12 @@ function PatientInfo() {
         var weight_entry = data.data.total;
         if(weight_entry !== 0){
             var weight = (data.data.entry[0].resource.valueQuantity.value * 2.205).toFixed(2)
-            setWeightRecored(new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
-            setWeight(weight)
+            setValue('weight', weight)
+            setValue('weightRecorded', new Date(data.data.entry[0].resource.issued).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
             console.log("Weight retrieval succesful");
         } else {
-            setWeight('')
-            setWeightRecored('')
+            setValue('weight', '')
+            setValue('weightRecorded', '')
             console.log("Weight not taken");
             return
         }
@@ -152,10 +168,10 @@ function PatientInfo() {
             var inches = (height - (feet * 12))
             var feet_and_inches = feet + " ft" + " " + inches + " inches"
             console.log(feet_and_inches)
-            setHeight(feet_and_inches)
+            setValue('height', feet_and_inches)
             console.log("Height retrieval succesful");
         } else {
-            setHeight('')
+            setValue('height', '')
             console.log("Height not taken");
             return
         }
@@ -180,20 +196,21 @@ function PatientInfo() {
             console.log(smoking_status)
             if (smoking_status === "266919005" || smoking_status === "266927001" || smoking_status === "8517006") {
                 var no_smoking_status = "N"
-                setSmokingStatus(no_smoking_status)
+                setValue('smokingStatus', no_smoking_status)
                 console.log("Smoking Status retrieval succesful");
             } else {
                 var has_smoking_status = "Y"
-                setSmokingStatus(has_smoking_status)
+                setValue('smokingStatus', has_smoking_status)
                 console.log("Smoking Status retrieval succesful");
             }
         } else {
             var no_smoking_status_entry = "N"
-            setSmokingStatus(no_smoking_status_entry)
+            setValue('smokingStatus', no_smoking_status_entry)
             console.log("Smoking Status retrieval succesful");
         }
     }
-
+    
+    /*
     const goForward = () => {
         dispatch(getPatientID(patientID))
         dispatch(getDOB(dob))
@@ -209,12 +226,13 @@ function PatientInfo() {
         dispatch(getTobaccoUsage(smokingStatus))
         history.push("/health/summary");
     } 
-
+    */
 
     return (
         <Container fluid className="content-block">
         {submitComplete ? (
             <>
+                {/*
                 <h1>Preventative Health Check</h1>
                 <p className="pageDescription">The information below is needed to get the most personalized list of recommendations from the US Preventative Services Task Force.</p>
                 <p className="pageDescription">All fields are optional.</p>
@@ -226,7 +244,154 @@ function PatientInfo() {
                 <h2>Blood pressure: {systolicbloodpressure}/{diastolicbloodpressure} mmHg</h2>
                 <h2>Date Blood Pressure Recorded: {bloodpressureRecored} </h2>
                 <h2>Tobacco Usage: {smokingStatus} </h2>
-                <Button variant='form' onClick={() => goForward()}>Next</Button>
+                */}
+                <form onSubmit={handleSubmit(onSubmit)}>
+                        <h1>Preventative Health Check</h1>
+                        <p className="pageDescription">The information below is needed to get the most personalized list of recommendations from the US Preventative Services Task Force.</p>
+                        <p className="pageDescription">All fields are optional.</p>
+                        <Row>
+                            <Col>
+                                <h2>Date of Birth</h2>
+                            </Col>
+                            <Col>
+                                <input
+                                {...register("dob", { required: true })}
+                                placeholder="dob"
+                                disabled={disabled}
+                                />
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Sex at Birth</h2>
+                            </Col>
+                            <Col>
+                                <select {...register("gender")} disabled={disabled}>
+                                    <option value="">Select...</option>
+                                    <option value="female">Female</option>
+                                    <option value="male">Male</option>
+                                </select>
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Height</h2>
+                            </Col>
+                            <Col>
+                                <input
+                                {...register("height", { required: true })}
+                                placeholder="height"
+                                disabled={disabled}
+                                />
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Weight</h2>
+                            </Col>
+                            <Col>
+                                <input
+                                {...register("weight", { required: true })}
+                                placeholder="weight"
+                                disabled={disabled}
+                                />
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Date Weight Recorded</h2>
+                            </Col>
+                            <Col>
+                                <input
+                                {...register("weightRecorded", { required: true })}
+                                placeholder="weightRecorded"
+                                disabled={disabled}
+                                />
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Diastolic Blood Pressure</h2>
+                            </Col>
+                            <Col>
+                                <input
+                                {...register("diastolicBloodPressure", { required: true })}
+                                placeholder="diastolicBloodPressure"
+                                disabled={disabled}
+                                />
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Systolic Blood Pressure</h2>
+                            </Col>
+                            <Col>
+                                <input
+                                {...register("systolicBloodPressure", { required: true })}
+                                placeholder="systolicBloodPressure"
+                                disabled={disabled}
+                                />
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Blood Pressure Recorded</h2>
+                            </Col>
+                            <Col>
+                                <input
+                                {...register("bloodPressureRecorded", { required: true }) }
+                                placeholder="bloodPressureRecorded"
+                                disabled={disabled}
+                                />
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Pregnant</h2>
+                            </Col>
+                            <Col>
+                                <select {...register("pregnancyStatus")} disabled={disabled}>
+                                    <option value="">Select...</option>
+                                    <option value="Y">Yes</option>
+                                    <option value="N">No</option>
+                                </select>
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Tobacco Use</h2>
+                            </Col>
+                            <Col>
+                                <select {...register("smokingStatus")} disabled={disabled}>
+                                    <option value="">Select...</option>
+                                    <option value="Y">Yes</option>
+                                    <option value="N">No</option>
+                                </select>
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "10px"}}>
+                            <Col>
+                                <h2>Sexually Active</h2>
+                            </Col>
+                            <Col>
+                                <select {...register("sexualActivityStatus")} disabled={disabled}>
+                                    <option value="">Select...</option>
+                                    <option value="Y">Yes</option>
+                                    <option value="N">No</option>
+                                </select>
+                            </Col>
+                        </Row>
+                        <Row style={{paddingTop: "20px"}}>
+                            <Col>
+                           <Button variant='form' type="submit"> Next </Button>
+                            </Col>
+                            <Col>
+                                <Button variant='edit' onClick={() => setDisable((d) => !d)}>
+                                    Edit Form
+                                </Button>
+                            </Col>
+                        </Row>
+                </form>
             </>
           ) : (
             <>

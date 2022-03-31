@@ -1,22 +1,36 @@
-import React, { useState } from 'react'; 
-import { Accordion, Container, Row, Col, Button } from "react-bootstrap";
-import { useForm } from 'react-hook-form';
+import React, { useState } from 'react';
+import { Input, Page, List, ListHeader, ListItem, Button, ProgressCircular } from "react-onsenui";
+import { Controller, useForm } from 'react-hook-form';
 import axios from "axios";
+import * as USPSTF from '../../../types/uspstf';
 
+//import "./Search.css"; // Import styling
 
-import "./Search.css"; // Import styling
-
+type SearchFormInput = {
+    userName: string;
+};
 
 function Search() {
 
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { control, handleSubmit, formState: { errors } } = useForm<SearchFormInput>({
         mode: 'onTouched',
+        defaultValues: {
+            userName: ''
+        }
     });
 
-    const [preventativeServiceList, setPreventativeServiceList] = useState([]);
-    
+    const [userLookupError, setUserLookupError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const [preventativeServiceList, setPreventativeServiceList] = useState<USPSTF.APIResponse>({
+        specificRecommendations: [],
+        grades: {},
+        generalRecommendations: {}
+    });
+
     const [gender, setGender] = useState('');
-    const [age, setAge] = useState('');
+    // Currently negative numbers mean "invalid/unknown" - also NaN
+    const [age, setAge] = useState(-1);
     const [dob, setDOB] = useState('');
 
     const [weight, setWeight] = useState('');
@@ -32,39 +46,53 @@ function Search() {
     const [smokingStatus, setSmokingStatus] = useState('');
     const [colonoscopy_procedure, setColonoscopy_Procedure] = useState('');
 
-    const onSubmit = async (data) => {
-        console.log(data.userName)
+    const onSubmit = async (data: SearchFormInput) => {
+        // Blank the lookup error for now
+        setUserLookupError('');
+        setLoading(true);
+        console.log(`Looking up user "${data.userName}"`);
         const response = await axios({
             method: "POST",
             url: "http://localhost:4002/search_username",
             data: data
         });
-        if (response.status === 200){
-            var data = response.data;
-            console.log("Patient was Found", data)
-            var patientID = data.entry[0].resource.id
-            var gender = data.entry[0].resource.gender;
-            var dob = data.entry[0].resource.birthDate;
-            console.log(patientID)
-            console.log(gender)
+        if (response.status === 200 && response.data.entry?.length > 0) {
+            const responseData = response.data;
+            console.log("Patient was Found", responseData)
+            const patientID = responseData.entry[0].resource.id
+            const gender = responseData.entry[0].resource.gender;
+            const dob = responseData.entry[0].resource.birthDate;
+            console.log(`Patient ID = ${patientID}`)
+            console.log(`Gender = ${gender}`)
             setDOB(new Date(dob).toLocaleDateString("en-us", {year: 'numeric', month: 'long', day: 'numeric'}))
-            await getBloodPressure(patientID)
-            await getBMI(patientID)
-            await getHeight(patientID)
-            await getWeight(patientID)
-            await preventatives_services(gender, calculate_age(dob), await smoking_status(patientID), await colonoscopy_check(patientID));
-        } else if(response.status === 404){
-            console.log("Patient not Found")
+            try {
+                // Do the stuff we can do in parallel in parallel
+                await Promise.all([
+                    getBloodPressure(patientID),
+                    getBMI(patientID),
+                    getHeight(patientID),
+                    getWeight(patientID)
+                ]);
+                await preventatives_services(gender, calculate_age(dob), await smoking_status(patientID), await colonoscopy_check(patientID));
+            } catch (ex) {
+                console.log('exception loading data:');
+            }
+        } else if ((response.status === 200 && !('entry' in response.data && response.data.entry.length > 0)) || response.status === 404) {
+            console.log("Patient not found");
+            setUserLookupError(`User ${data.userName} not found.`);
+        } else {
+            setUserLookupError('An unknown error happened while looking up patient data.');
         }
+        setLoading(false);
     }
 
-    //calculates the current age from data of birth 
-    const calculate_age = (dob1) => {
+    //calculates the current age from data of birth
+    const calculate_age = (dob1: string) => {
         var today = new Date();
         var birthDate = new Date(dob1);  // create a date object directly from `dob1` argument
-        var age_now = today.getFullYear() - birthDate.getFullYear(); 
+        var age_now = today.getFullYear() - birthDate.getFullYear();
         var m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) 
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate()))
         {
             age_now--;
         }
@@ -72,7 +100,7 @@ function Search() {
     }
 
     //make query to check for previous colonoscopy of Patient
-    const colonoscopy_check = async (patientID) => {
+    const colonoscopy_check = async (patientID: string) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -92,8 +120,8 @@ function Search() {
     }
 
 
-    //make query to search for smoking status of Patient 
-    const smoking_status = async (patientID) => {
+    //make query to search for smoking status of Patient
+    const smoking_status = async (patientID: string) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -101,7 +129,7 @@ function Search() {
             data: {
                 patientID: patientID
             },
-        })           
+        })
         var data = response.data;
         console.log(data)
         var smoking_status_entry = data.data.total;
@@ -118,14 +146,14 @@ function Search() {
         }
     }
 
-    //make query to preventative services to provide list of potential services for patient to front-end client 
-    const preventatives_services = async (gender, age, smokingStatus, colonoscopyCheck) => {
+    //make query to preventative services to provide list of potential services for patient to front-end client
+    const preventatives_services = async (gender: string, age: number, smokingStatus: string, colonoscopyCheck: string) => {
         setGender(gender);
         setAge(age);
         setSmokingStatus(smokingStatus);
         setColonoscopy_Procedure(colonoscopyCheck)
         console.log(gender);
-        console.log(age);   
+        console.log(age);
         console.log(smokingStatus);
         console.log(colonoscopyCheck)
         const response = await axios({
@@ -136,14 +164,14 @@ function Search() {
                 age: age,
                 smokingStatus: smokingStatus
             },
-        })         
+        })
         var data = response.data;
         console.log(data)
         setPreventativeServiceList(data)
         console.log("preventative services success");
     }
 
-    const getBMI = async (patientID) => {
+    const getBMI = async (patientID: string) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -166,7 +194,7 @@ function Search() {
         }
     }
 
-    const getHeight = async (patientID) => {
+    const getHeight = async (patientID: string) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -181,7 +209,7 @@ function Search() {
             var height = Math.round(data.data.entry[0].resource.valueQuantity.value / 2.54)
             var feet = Math.floor(height/12)
             var inches = (height - (feet * 12))
-            var feet_and_inches = feet + " ft" + " " + inches + " inches"
+            var feet_and_inches = feet + " ft " + inches + " inches"
             console.log(feet_and_inches)
             setHeight(feet_and_inches)
             console.log("Height retrieval succesful");
@@ -192,7 +220,7 @@ function Search() {
         }
     }
 
-    const getWeight = async (patientID) => {
+    const getWeight = async (patientID: string) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -218,7 +246,7 @@ function Search() {
         }
     }
 
-    const getBloodPressure = async (patientID) => {
+    const getBloodPressure = async (patientID: string) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -245,139 +273,134 @@ function Search() {
             return
         }
     }
-    
+
+    const havePatientData = !!(dob || gender || age || height || weight || weightRecorded || bmi || (systolicbloodpressure && diastolicbloodpressure) || bloodpressureRecored || smokingStatus);
 
     return (
-        <Container fluid className="content-block">
-            <Row style={{ paddingTop: "20px" }}>
-                <Col md={6}>
-                    <h1>Preventative Health Check</h1>
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <input type="text" className="form-control" {...register("userName", { required: true })}/>
-                        {errors.patientID && <p className="error-text">user name is required</p>}
-                        <Button variant='form' type="submit">Submit</Button>
-                    </form>
-                </Col>
-            </Row>
-            <Row>
-                <Col md={6}>
-                    { dob && <h1 style={{paddingTop:"30px"}}>Patient Info:</h1> }
-                    { dob && <h3>Date of Birth: {dob} </h3> }
-                    { gender && <h3>Sex assigned at Birth: {gender} </h3> }
-                    { age && <h3>Age: {age} </h3> }
-                    { height && <h3>Height: {height} </h3> }
-                    { weight && <h3>Weight: {weight} lbs</h3> }
-                    { weightRecorded && <h3>Date Weight Recorded: {weightRecorded}</h3> }
-                    { bmi && <h3>BMI: {bmi} kg/m2</h3> }
-                    { systolicbloodpressure && diastolicbloodpressure && <h3>Blood pressure: {systolicbloodpressure}/{diastolicbloodpressure} mmHg</h3> }
-                    { bloodpressureRecored && <h3>Date Blood Pressure Recorded: {bloodpressureRecored}</h3> }
-                    { smokingStatus && <h3>Smoking Status: {smokingStatus} </h3> }
-                </Col>
-            </Row> 
-            {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure == "Y" ?
-            <Row>
-                 <Col md={6}>
-                        <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1> 
-
-                        <h2>My Care Plan</h2> 
+        <Page>
+            <h1>Preventative Health Check</h1>
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <List>
+                    <ListItem>
+                        <Controller name="userName" control={control} render={({field}) => <Input type="text" /*autoComplete="username" autocapitalize="off"*/ disabled={loading} placeholder="Username" float {...field}/>} />
+                        {errors.userName && <div className="list-item__subtitle">user name is required</div>}
+                        <div className="list-item__subtitle">{userLookupError}</div>
+                    </ListItem>
+                    { loading ?
+                        <ListItem><div className="left"><ProgressCircular indeterminate/></div><div className="center">Loading patient data...</div></ListItem>
+                        : <ListItem><div className="right"><Button modifier="cta" onClick={handleSubmit(onSubmit)}>Lookup</Button></div></ListItem>
+                    }
+                </List>
+            </form>
+            { havePatientData ?
+                <List>
+                    <ListHeader>Patient Info:</ListHeader>
+                    { dob && <ListItem>Date of Birth: {dob}</ListItem> }
+                    { gender && <ListItem>Sex assigned at Birth: {gender}</ListItem> }
+                    { (age >= 0) && <ListItem>Age: {age} </ListItem> }
+                    { height && <ListItem>Height: {height} </ListItem> }
+                    { weight && <ListItem>Weight: {weight} lbs</ListItem> }
+                    { weightRecorded && <ListItem>Date Weight Recorded: {weightRecorded}</ListItem> }
+                    { bmi && <ListItem>BMI: {bmi} kg/m2</ListItem> }
+                    { (systolicbloodpressure && diastolicbloodpressure) && <ListItem>Blood pressure: {systolicbloodpressure}/{diastolicbloodpressure} mmHg</ListItem> }
+                    { bloodpressureRecored && <ListItem>Date Blood Pressure Recorded: {bloodpressureRecored}</ListItem> }
+                    { smokingStatus && <ListItem>Smoking Status: {smokingStatus} </ListItem> }
+                </List>
+            : false }
+            { preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure === "Y" ?
+                <>
+                    <h1>Preventative Services List</h1>
+                    <List>
+                        <ListHeader>My Care Plan</ListHeader>
                          {preventativeServiceList.specificRecommendations.filter(item => item.title !== "Colorectal Cancer: Screening -- Adults aged 50 to 75 years").map((item) => (
-                             <Accordion>
-                             <Accordion.Item eventKey={item}>
-                                 <Accordion.Header>{item.title}</Accordion.Header>
-                                 <Accordion.Body>
-                                 {item.text}
-                                 </Accordion.Body>
-                             </Accordion.Item>
-                         </Accordion>
+                             <ListItem expandable key={item.id}>
+                                 <div className="left">{item.title}</div>
+                                 <div className="expandable-content">{item.text}</div>
+                             </ListItem>
                       ))}
-                </Col>
-            </Row> : ''
+                    </List>
+                </> : ''
             }
-            {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure == "N" ?
-            <Row>
-                 <Col md={6}>
-                        <h1 style={{paddingTop:"10px"}}>Preventative Services List</h1> 
-
-                        <h2>My Care Plan</h2> 
+            {  preventativeServiceList?.specificRecommendations?.length > 0 && colonoscopy_procedure === "N" ?
+            <>
+                <h1>Preventative Services List</h1>
+                <List>
+                    <ListHeader>My Care Plan</ListHeader>
                         { preventativeServiceList.specificRecommendations.map((item) => (
-                            <Accordion>
-                                <Accordion.Item eventKey={item}>
-                                    <Accordion.Header>{item.title}</Accordion.Header>
-                                    <Accordion.Body>
-                                    {item.text}
-                                    </Accordion.Body>
-                                </Accordion.Item>
-                            </Accordion>
+                            <ListItem expandable key={item.id}>
+                                <div className="left">{item.title}</div>
+                                <div className="expandable-content">{item.text}</div>
+                            </ListItem>
                          ))}
-                </Col>
-            </Row> : ''
+                </List>
+            </> : ''
             }
             {/*preventativeServiceList?.generalRecommendations &&
             <Row>
                  <Col md={6}>
                         <h2>General Recommendations</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.generalRecommendations).map((item) => (
                                 <li key={item}>{preventativeServiceList.generalRecommendations[item].title}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
             {/*preventativeServiceList?.categories &&
             <Row>
                  <Col md={6}>
                         <h2>Categories</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.categories).map((item) => (
                                 <li key={item}>{preventativeServiceList.categories[item].name}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
             {/*preventativeServiceList?.tools &&
             <Row>
                  <Col md={6}>
                         <h2>Tools</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.tools).map((item) => (
                                 <li key={item}>{preventativeServiceList.tools[item].title}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
             {/*preventativeServiceList?.risks &&
             <Row>
                  <Col md={6}>
                         <h2>Risks</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.risks).map((item) => (
                                 <li key={item}>{preventativeServiceList.risks[item].name}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
             {/*preventativeServiceList?.grades &&
             <Row>
                  <Col md={6}>
                         <h2>grades</h2> <ul>
-                        { 
+                        {
                           Object.keys(preventativeServiceList.grades).map((item) => (
                                 <li key={item}>{item}: {preventativeServiceList.grades[item]}</li>
                           ))
                         }
                         </ul>
                 </Col>
-            </Row> 
+            </Row>
             */}
-        </Container>
+        </Page>
     )
 }
 

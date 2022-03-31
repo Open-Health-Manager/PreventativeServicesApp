@@ -1,32 +1,57 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { useForm } from "react-hook-form";
-import { Container, Row, Col, Button, Spinner } from "react-bootstrap";
+import { Button, Row, Col, Page, ProgressCircular } from "react-onsenui";
 import axios from "axios";
 import { getPatientID, getDOB, getGender, getPatientAge, getPatientName, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getBloodPressureRecorded, getPregnancyStatus, getTobaccoUsage, getSexualActivity} from '../../../store/patientSlice'
 
+import { Patient } from '../../../types/patient';
 import "./PatientInfo.css"; // Import styling
 
+type PatientFormValues = {
+    patientName: string;
+    gender: string;
+    dob: string;
+    systolicBloodPressure: string;
+    diastolicBloodPressure: string;
+    bloodPressureRecorded: string;
+    weight: string;
+    weightRecorded: string;
+    height: string;
+    smokingStatus: string;
+    pregnancyStatus: string;
+    sexualActivityStatus: string;
+}
 
 function PatientInfo() {
     const dispatch = useDispatch()
     const history = useHistory()
     const patientUserName = useSelector(state => state.patient.patientUserName)
     const [submitComplete, setSubmitComplete] = useState(false);
-   
+
     const [patientID, setPatientID] = useState('');
     const [patientName, setPatientName] = useState('');
-    const [age, setAge] = useState('');
+    const [age, setAge] = useState<number | null>(null);
 
     const { register, handleSubmit, setValue } = useForm({
         defaultValues: {
+            patientName: '',
+            gender: '',
+            dob: '',
+            systolicBloodPressure: '',
+            diastolicBloodPressure: '',
+            bloodPressureRecorded: '',
+            weight: '',
+            weightRecorded: '',
+            height: '',
+            smokingStatus: '',
             pregnancyStatus: "N",
             sexualActivityStatus: "N"
         }
     });
     const [disabled, setDisable] = useState(true);
-    const onSubmit = (data) => {
+    const onSubmit = (data: PatientFormValues) => {
         console.log(data)
         dispatch(getPatientID(patientID))
         dispatch(getDOB(data.dob))
@@ -77,19 +102,19 @@ function PatientInfo() {
                 setSubmitComplete(true);
             } else if(response.status === 404){
                 console.log("Patient not Found")
-            }      
+            }
           };
           fetchPatientData();
     }, [patientUserName]);
 
 
-     //calculates the current age from data of birth 
-     const calculate_age = (dob1) => {
+     //calculates the current age from data of birth
+     const calculate_age = (dob1: string) => {
         var today = new Date();
         var birthDate = new Date(dob1);  // create a date object directly from `dob1` argument
-        var age_now = today.getFullYear() - birthDate.getFullYear(); 
+        var age_now = today.getFullYear() - birthDate.getFullYear();
         var m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) 
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate()))
         {
             age_now--;
         }
@@ -97,7 +122,7 @@ function PatientInfo() {
     }
 
     //Retrieve Patients Blood Pressure via PatientID
-    const getBloodPressure = async (patientID) => {
+    const getBloodPressure = async (patientID: number) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -126,7 +151,7 @@ function PatientInfo() {
     }
 
     //Retrieve Patients Weight via PatientID
-    const getWeight = async (patientID) => {
+    const getWeight = async (patientID: number) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -151,7 +176,7 @@ function PatientInfo() {
     }
 
     //Retrieve Patients Height via PatientID
-    const getHeight = async (patientID) => {
+    const getHeight = async (patientID: number) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -179,7 +204,7 @@ function PatientInfo() {
 
 
     //Retrieve Patients Smoking Status via PatientID
-    const smoking_status = async (patientID) => {
+    const smoking_status = async (patientID: number) => {
         console.log(patientID)
         const response = await axios({
             method: "POST",
@@ -187,7 +212,7 @@ function PatientInfo() {
             data: {
                 patientID: patientID
             },
-        })           
+        })
         var data = response.data;
         console.log(data)
         var smoking_status_entry = data.data.total;
@@ -209,7 +234,7 @@ function PatientInfo() {
             console.log("Smoking Status retrieval succesful");
         }
     }
-    
+
     /*
     const goForward = () => {
         dispatch(getPatientID(patientID))
@@ -225,11 +250,11 @@ function PatientInfo() {
         dispatch(getBloodPressureRecorded(bloodpressureRecored))
         dispatch(getTobaccoUsage(smokingStatus))
         history.push("/health/summary");
-    } 
+    }
     */
 
     return (
-        <Container fluid className="content-block">
+        <Page>
         {submitComplete ? (
             <>
                 {/*
@@ -383,10 +408,10 @@ function PatientInfo() {
                         </Row>
                         <Row style={{paddingTop: "20px"}}>
                             <Col>
-                           <Button variant='form' type="submit"> Next </Button>
+                           <Button /*variant='form' type="submit"*/> Next </Button>
                             </Col>
                             <Col>
-                                <Button variant='edit' onClick={() => setDisable((d) => !d)}>
+                                <Button /*variant='edit'*/ onClick={() => setDisable((d) => !d)}>
                                     Edit Form
                                 </Button>
                             </Col>
@@ -396,10 +421,10 @@ function PatientInfo() {
           ) : (
             <>
                  <h2>Retrieving Patient Info</h2>
-                 <Spinner animation="border" variant="light" />
+                 <ProgressCircular indeterminate />
             </>
          )}
-        </Container>
+        </Page>
     )
 }
 

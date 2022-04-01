@@ -295,6 +295,7 @@ function PatientInfo() {
                                 placeholder="weight"
                                 disabled={disabled}
                                 />
+                                <p className="units_of_measurement">lbs</p>
                             </Col>
                         </Row>
                         <Row style={{paddingTop: "10px"}}>
@@ -319,6 +320,7 @@ function PatientInfo() {
                                 placeholder="diastolicBloodPressure"
                                 disabled={disabled}
                                 />
+                                <p className="units_of_measurement">mmHg</p>
                             </Col>
                         </Row>
                         <Row style={{paddingTop: "10px"}}>
@@ -331,6 +333,7 @@ function PatientInfo() {
                                 placeholder="systolicBloodPressure"
                                 disabled={disabled}
                                 />
+                                <p className="units_of_measurement">mmHg</p>
                             </Col>
                         </Row>
                         <Row style={{paddingTop: "10px"}}>
@@ -387,7 +390,7 @@ function PatientInfo() {
                             </Col>
                             <Col>
                                 <Button variant='edit' onClick={() => setDisable((d) => !d)}>
-                                    Edit Form
+                                    Edit
                                 </Button>
                             </Col>
                         </Row>

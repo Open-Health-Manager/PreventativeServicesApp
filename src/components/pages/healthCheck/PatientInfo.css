@@ -27,3 +27,9 @@ input {
 .btn-edit:hover {
   color: white;
 }
+
+.units_of_measurement {
+  color: white;
+  padding-top: 10px;
+  font-size: 18px;
+}

@@ -350,7 +350,7 @@ export class Button extends Component<{
     onClick?(e?: React.MouseEvent<HTMLElement>): void
 }, any> {}
 
-export class Input extends Component<InputHTMLAttributes<'min' | 'max' | 'step'> & {
+export class Input extends Component<InputHTMLAttributes<'min' | 'max' | 'step' | 'autoComplete' | 'autoCapitalize'> & {
     modifier?: string | undefined,
     disabled?: boolean | undefined,
     readOnly?: boolean | undefined,

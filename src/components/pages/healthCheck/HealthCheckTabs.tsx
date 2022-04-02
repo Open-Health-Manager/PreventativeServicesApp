@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Page, Tabbar, Tab } from "react-onsenui";
+import Summary from './Summary';
+import CarePlan from './CarePlan';
+import History from './History';
 
-import "./header.css"
-
-function Header() {
+function HealthCheckTabs() {
     const [index, setIndex] = useState(0);
     return (
         <Page>
@@ -11,15 +12,15 @@ function Header() {
                 onPreChange={({index}: {index: number}) => { setIndex(index) }}
                 index={index} renderTabs={(activeIndex, tabbar) => [
                 {
-                    content: <Page>Summary</Page>,
+                    content: <Summary/>,
                     tab: <Tab label="Summary" />
                 },
                 {
-                    content: <Page>Care Plan</Page>,
+                    content: <CarePlan/>,
                     tab: <Tab label="Care Plan" />
                 },
                 {
-                    content: <Page>History</Page>,
+                    content: <History/>,
                     tab: <Tab label="History" />
                 }
             ]}/>
@@ -27,4 +28,4 @@ function Header() {
     )
 }
 
-export default Header;
+export default HealthCheckTabs;

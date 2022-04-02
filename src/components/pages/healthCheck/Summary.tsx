@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import { List, ListItem, Page, ProgressCircular, Button } from "react-onsenui";
-import Header from '../../header/header'
+import { List, ListItem, Page, ProgressCircular, Button, Toolbar } from "react-onsenui";
 import axios from "axios";
 import { addSpecificRecommendations, deleteSpecificRecommendation } from '../../../store/specificRecommendationsSlice';
 import { SpecificRecommendation } from '../../../types/uspstf';
 
-import "./Summary.css"; // Import styling
+//import "./Summary.css"; // Import styling
 
 import '../../../types/state';
 
@@ -90,11 +89,10 @@ function Summary() {
     }
 
     return (
-        <Page>
+        <Page
+            renderToolbar={() => <Toolbar><div className="center">{patientName}</div></Toolbar>}>
          {submitComplete ? (
             <>
-                <Header />
-                <h1 style={{ paddingTop: "20px", paddingBottom:"20px"}}>{patientName}</h1>
                 <h2 style={{ paddingBottom: "30px" }}>Get Started: Preventative Health Check</h2>
 
                 {  RecommendationsList?.length > 0 ?

@@ -1,14 +1,13 @@
 import React from 'react'
-import Header from '../../header/header'
-import { Page } from "react-onsenui";
+import { Page, Toolbar } from "react-onsenui";
 
 
 
 function History() {
     return (
-        <Page>
-            <Header />
-            <h1>History</h1>
+        <Page
+            renderToolbar={() => <Toolbar><div className="center">History</div></Toolbar>}>
+            <div>Content to come</div>
         </Page>
     )
 }

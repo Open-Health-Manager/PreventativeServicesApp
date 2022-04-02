@@ -3,7 +3,10 @@ import { Provider } from 'react-redux';
 import store from './store/index';
 import ons from 'onsenui';
 
-import './index.css';
+// Import Onsen styles
+import 'onsenui/css/onsenui.css';
+import 'onsenui/css/onsen-css-components.css';
+
 import App from './components/app/App';
 
 if (ons.platform.isIPhoneX()) {

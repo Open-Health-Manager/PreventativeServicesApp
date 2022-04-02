@@ -1,36 +1,50 @@
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { getPatientUserName } from '../../../store/patientSlice'
 
-import { Page, Button } from "react-onsenui";
+import { Page, Toolbar, List, ListItem, Input, Button, Navigator } from "react-onsenui";
+
 
 type UserSearchForm = {
-    patientUserName: string;
+    patientUserName?: string;
 };
 
-function UserSearch() {
+export type UserSearchProperties = {
+    navigator?: Navigator;
+};
+
+function UserSearch(props: UserSearchProperties) {
     const dispatch = useDispatch()
-    const history = useHistory()
+
     const patientUserName = useSelector(state => state.patient.patientUserName)
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { control, handleSubmit, formState: { errors } } = useForm({
         defaultValues: { patientUserName },
         mode: 'onTouched',
     });
 
     const onSubmit = (data: UserSearchForm) => {
         dispatch(getPatientUserName(data.patientUserName))
-        history.push("/health/patient")
+        console.log(props.navigator);
+        props.navigator?.pushPage({id: 'patient'});
     }
 
     return (
-        <Page>
-            <h1>Health Check Search</h1>
+        <Page
+            renderToolbar={() => <Toolbar>
+                <div className="center">Health Check Search</div>
+            </Toolbar>}
+        >
             <form onSubmit={handleSubmit(onSubmit)}>
-                <input className="form-control" type="text" id="patientUserName" {...register("patientUserName", { required: true })}/>
-                {errors.patientUserName && <p className="error-text">user name is required</p>}
-                <Button /*variant='form' type="submit"*/>Submit</Button>
+                <List>
+                    <ListItem key="username">
+                        <Controller name="patientUserName" control={control} render={({field}) => <Input type="text" autoComplete="username" autoCapitalize="off" placeholder="Username" float {...field}/>} />
+                        <div className="list-item__subtitle">{errors.patientUserName ? 'User name is required' : ''}</div>
+                    </ListItem>
+                    <ListItem key="submit">
+                        <Button onClick={handleSubmit(onSubmit)}>Submit</Button>
+                    </ListItem>
+                </List>
             </form>
         </Page>
     )

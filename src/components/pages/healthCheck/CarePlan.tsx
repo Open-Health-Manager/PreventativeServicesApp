@@ -1,6 +1,5 @@
 import React from 'react'
-import Header from '../../header/header'
-import { Page, List, ListHeader, ListItem } from "react-onsenui";
+import { Page, List, ListHeader, ListItem, Toolbar } from "react-onsenui";
 import { useSelector } from 'react-redux'
 import '../../../types/state';
 
@@ -9,9 +8,8 @@ function CarePlan() {
     const patientInfo = useSelector(state => state.patient)
 
     return (
-        <Page>
-            <Header />
-            <h1>Care Plan</h1>
+        <Page
+            renderToolbar={() => <Toolbar><div className="center">Care Plan</div></Toolbar>}>
             <List>
                 { specificRecommendationsList.filter(item => item.id === 1921).map((item) => (
                     <>

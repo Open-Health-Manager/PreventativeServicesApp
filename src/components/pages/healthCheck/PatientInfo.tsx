@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
-import { useForm } from "react-hook-form";
-import { Button, Row, Col, Page, ProgressCircular } from "react-onsenui";
+import { Controller, useForm } from "react-hook-form";
+import { Button, Page, List, ListItem, Input, ProgressCircular, Toolbar, Select, Navigator } from "react-onsenui";
 import axios from "axios";
 import { getPatientID, getDOB, getGender, getPatientAge, getPatientName, getPatientHeight, getPatientWeight, getWeightRecorded, getDiastolicBloodPressure, getSystolicBloodPressure, getBloodPressureRecorded, getPregnancyStatus, getTobaccoUsage, getSexualActivity} from '../../../store/patientSlice'
 
 import { Patient } from '../../../types/patient';
-import "./PatientInfo.css"; // Import styling
+//import "./PatientInfo.css"; // Import styling
 
 type PatientFormValues = {
     patientName: string;
@@ -24,9 +23,12 @@ type PatientFormValues = {
     sexualActivityStatus: string;
 }
 
-function PatientInfo() {
+export type PatientInfoProps = {
+    navigator?: Navigator;
+};
+
+function PatientInfo(props: PatientInfoProps) {
     const dispatch = useDispatch()
-    const history = useHistory()
     const patientUserName = useSelector(state => state.patient.patientUserName)
     const [submitComplete, setSubmitComplete] = useState(false);
 
@@ -34,7 +36,7 @@ function PatientInfo() {
     const [patientName, setPatientName] = useState('');
     const [age, setAge] = useState<number | null>(null);
 
-    const { register, handleSubmit, setValue } = useForm({
+    const { control, handleSubmit, setValue } = useForm({
         defaultValues: {
             patientName: '',
             gender: '',
@@ -67,7 +69,8 @@ function PatientInfo() {
         dispatch(getPregnancyStatus(data.pregnancyStatus))
         dispatch(getTobaccoUsage(data.smokingStatus))
         dispatch(getSexualActivity(data.sexualActivityStatus))
-        history.push("/health/summary");
+        if (props.navigator)
+            props.navigator.pushPage({ id: 'summary' });
     }
 
 
@@ -82,13 +85,22 @@ function PatientInfo() {
                 url: "http://localhost:4002/search_username",
                 data: submission
             });
-            if (response.status === 200){
-                var data = response.data;
-                console.log("Patient was Found", data)
-                var dataPatientID = data.entry[0].resource.id;
-                var dataGender = data.entry[0].resource.gender;
-                var dataDOB = data.entry[0].resource.birthDate;
-                var dataName = data.entry[0].resource.name[0].given[0]
+            if (response.status === 200) {
+                const patient = response.data.entry[0]?.resource;
+                if (!patient) {
+                    console.log('Patient not found');
+                    return;
+                }
+                const dataPatientID = patient.id;
+                const dataGender = patient.gender;
+                const dataDOB = patient.birthDate;
+                // Name is optional
+                let dataName = 'Unknown';
+                if (Array.isArray(patient.name) && patient.name.length > 0) {
+                    if (Array.isArray(patient.name[0].given) && patient.name[0].given.length > 0 && typeof patient.name[0].given[0] === 'string') {
+                        dataName = patient.name[0].given[0];
+                    }
+                }
                 setPatientName(dataName)
                 setValue('patientName', dataName)
                 setPatientID(dataPatientID)
@@ -254,11 +266,11 @@ function PatientInfo() {
     */
 
     return (
-        <Page>
+        <Page
+            renderToolbar={() => <Toolbar><div className="center">Preventative Health Check</div></Toolbar>}>
         {submitComplete ? (
             <>
                 {/*
-                <h1>Preventative Health Check</h1>
                 <p className="pageDescription">The information below is needed to get the most personalized list of recommendations from the US Preventative Services Task Force.</p>
                 <p className="pageDescription">All fields are optional.</p>
                 <h2>Date of Birth: {dob}</h2>
@@ -271,151 +283,108 @@ function PatientInfo() {
                 <h2>Tobacco Usage: {smokingStatus} </h2>
                 */}
                 <form onSubmit={handleSubmit(onSubmit)}>
-                        <h1>Preventative Health Check</h1>
-                        <p className="pageDescription">The information below is needed to get the most personalized list of recommendations from the US Preventative Services Task Force.</p>
-                        <p className="pageDescription">All fields are optional.</p>
-                        <Row>
-                            <Col>
-                                <h2>Date of Birth</h2>
-                            </Col>
-                            <Col>
-                                <input
-                                {...register("dob", { required: true })}
-                                placeholder="dob"
-                                disabled={disabled}
-                                />
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Sex at Birth</h2>
-                            </Col>
-                            <Col>
-                                <select {...register("gender")} disabled={disabled}>
-                                    <option value="">Select...</option>
-                                    <option value="female">Female</option>
-                                    <option value="male">Male</option>
-                                </select>
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Height</h2>
-                            </Col>
-                            <Col>
-                                <input
-                                {...register("height", { required: true })}
-                                placeholder="height"
-                                disabled={disabled}
-                                />
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Weight</h2>
-                            </Col>
-                            <Col>
-                                <input
-                                {...register("weight", { required: true })}
-                                placeholder="weight"
-                                disabled={disabled}
-                                />
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Date Weight Recorded</h2>
-                            </Col>
-                            <Col>
-                                <input
-                                {...register("weightRecorded", { required: true })}
-                                placeholder="weightRecorded"
-                                disabled={disabled}
-                                />
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Diastolic Blood Pressure</h2>
-                            </Col>
-                            <Col>
-                                <input
-                                {...register("diastolicBloodPressure", { required: true })}
-                                placeholder="diastolicBloodPressure"
-                                disabled={disabled}
-                                />
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Systolic Blood Pressure</h2>
-                            </Col>
-                            <Col>
-                                <input
-                                {...register("systolicBloodPressure", { required: true })}
-                                placeholder="systolicBloodPressure"
-                                disabled={disabled}
-                                />
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Blood Pressure Recorded</h2>
-                            </Col>
-                            <Col>
-                                <input
-                                {...register("bloodPressureRecorded", { required: true }) }
-                                placeholder="bloodPressureRecorded"
-                                disabled={disabled}
-                                />
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Pregnant</h2>
-                            </Col>
-                            <Col>
-                                <select {...register("pregnancyStatus")} disabled={disabled}>
-                                    <option value="">Select...</option>
-                                    <option value="Y">Yes</option>
-                                    <option value="N">No</option>
-                                </select>
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Tobacco Use</h2>
-                            </Col>
-                            <Col>
-                                <select {...register("smokingStatus")} disabled={disabled}>
-                                    <option value="">Select...</option>
-                                    <option value="Y">Yes</option>
-                                    <option value="N">No</option>
-                                </select>
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "10px"}}>
-                            <Col>
-                                <h2>Sexually Active</h2>
-                            </Col>
-                            <Col>
-                                <select {...register("sexualActivityStatus")} disabled={disabled}>
-                                    <option value="">Select...</option>
-                                    <option value="Y">Yes</option>
-                                    <option value="N">No</option>
-                                </select>
-                            </Col>
-                        </Row>
-                        <Row style={{paddingTop: "20px"}}>
-                            <Col>
-                           <Button /*variant='form' type="submit"*/> Next </Button>
-                            </Col>
-                            <Col>
-                                <Button /*variant='edit'*/ onClick={() => setDisable((d) => !d)}>
-                                    Edit Form
-                                </Button>
-                            </Col>
-                        </Row>
+                    <p className="pageDescription">The information below is needed to get the most personalized list of recommendations from the US Preventative Services Task Force.</p>
+                    <p className="pageDescription">All fields are optional.</p>
+                    <List>
+                        <ListItem>
+                            <div className="left">Date of Birth</div>
+                            <div className="right">
+                                <Controller name="dob" control={control} rules={{required: true}} render={({field}) => <Input type="text" placeholder="DOB" disabled={disabled} {...field}/>} />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Sex at Birth</div>
+                            <div className="right">
+                                <Controller name="gender" control={control}
+                                    render={({field}) =>
+                                        <Select disabled={disabled} {...field}>
+                                            <option value="">Select...</option>
+                                            <option value="female">Female</option>
+                                            <option value="male">Male</option>
+                                        </Select>
+                                    } />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Height</div>
+                            <div className="right">
+                                <Controller name="height" control={control} rules={{required: true}} render={({field}) => <Input type="text" placeholder="height" disabled={disabled} {...field}/>} />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Weight</div>
+                            <div className="right">
+                                <Controller name="weight" control={control} rules={{required: true}} render={({field}) => <Input type="text" placeholder="weight" disabled={disabled} {...field}/>} />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Date Weight Recorded</div>
+                            <div className="right">
+                                <Controller name="weightRecorded" control={control} rules={{required: true}} render={({field}) => <Input type="text" placeholder="weightRecorded" disabled={disabled} {...field}/>} />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Diastolic Blood Pressure</div>
+                            <div className="right">
+                                <Controller name="diastolicBloodPressure" control={control} rules={{required: true}} render={({field}) => <Input type="text" placeholder="diastolicBloodPressure" disabled={disabled} {...field}/>} />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Systolic Blood Pressure</div>
+                            <div className="right">
+                                <Controller name="systolicBloodPressure" control={control} rules={{required: true}} render={({field}) => <Input type="text" placeholder="systolicBloodPressure" disabled={disabled} {...field}/>} />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Blood Pressure Recorded</div>
+                            <div className="right">
+                                <Controller name="bloodPressureRecorded" control={control} rules={{required: true}} render={({field}) => <Input type="text" placeholder="bloodPressureRecorded" disabled={disabled} {...field}/>} />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Pregnancy Status</div>
+                            <div className="right">
+                                <Controller name="pregnancyStatus" control={control}
+                                    render={({field}) =>
+                                        <Select disabled={disabled} {...field}>
+                                            <option value="">Select...</option>
+                                            <option value="Y">Yes</option>
+                                            <option value="N">No</option>
+                                        </Select>
+                                    } />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Tobacco Use</div>
+                            <div className="right">
+                                <Controller name="smokingStatus" control={control}
+                                    render={({field}) =>
+                                        <Select disabled={disabled} {...field}>
+                                            <option value="">Select...</option>
+                                            <option value="Y">Yes</option>
+                                            <option value="N">No</option>
+                                        </Select>
+                                    } />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left">Sexually Active</div>
+                            <div className="right">
+                                <Controller name="sexualActivityStatus" control={control}
+                                    render={({field}) =>
+                                        <Select disabled={disabled} {...field}>
+                                            <option value="">Select...</option>
+                                            <option value="Y">Yes</option>
+                                            <option value="N">No</option>
+                                        </Select>
+                                    } />
+                            </div>
+                        </ListItem>
+                        <ListItem>
+                            <div className="left"><Button onClick={((submit) => { return () => { console.log('submitting'); submit(); }})(handleSubmit(onSubmit))}>Next</Button></div>
+                            <div className="right"><Button onClick={() => setDisable((d) => !d)}>Edit Form</Button></div>
+                        </ListItem>
+                    </List>
                 </form>
             </>
           ) : (

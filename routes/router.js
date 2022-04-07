@@ -1,12 +1,18 @@
-const express = require('express'); 
+const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const https = require('https');
 const qs = require('qs');
 const mkFhir = require('fhir.js');
 
+require('dotenv').config();
+
+const FHIR_ROOT_URL = process.env.FHIR_SERVER_URL ?? 'http://ohm.healthmanager.pub.aws.mitre.org/fhir/';
+
+console.log('Using %s for FHIR requests...', FHIR_ROOT_URL);
+
 const fhir_client = mkFhir({
-    baseUrl: 'http://ohm.healthmanager.pub.aws.mitre.org:8080/fhir/'
+    baseUrl: FHIR_ROOT_URL
 });
 
 
@@ -22,7 +28,7 @@ router.post('/search_username', function (req, res) {
 
     axios({
         method: "GET",
-        url: `http://ohm.healthmanager.pub.aws.mitre.org:8080/fhir/Patient?identifier=urn%3Amitre%3Ahealthmanager%3Aaccount%3Ausername%7C${userName}`,
+        url: `${FHIR_ROOT_URL}Patient?identifier=urn%3Amitre%3Ahealthmanager%3Aaccount%3Ausername%7C${userName}`,
         httpsAgent: agent,
     }).then(response => {
         var data = response.data;
@@ -36,7 +42,7 @@ router.post('/search_username', function (req, res) {
 });
 
 
-//Check for Smoking Status of Patient based on Patient ID 
+//Check for Smoking Status of Patient based on Patient ID
 router.post("/smoking_status", function (req, res) {
     const { patientID } = req.body;
     console.log("req", req.body);
@@ -59,7 +65,7 @@ router.post("/smoking_status", function (req, res) {
     });
 });
 
-//Check for BMI of Patient based on Patient ID 
+//Check for BMI of Patient based on Patient ID
 router.post("/retrieve_bmi", function (req, res) {
     const { patientID } = req.body;
     console.log("req", req.body);
@@ -82,7 +88,7 @@ router.post("/retrieve_bmi", function (req, res) {
     });
 });
 
-//Check for Height of Patient based on Patient ID 
+//Check for Height of Patient based on Patient ID
 router.post("/retrieve_height", function (req, res) {
     const { patientID } = req.body;
     console.log("req", req.body);
@@ -105,7 +111,7 @@ router.post("/retrieve_height", function (req, res) {
     });
 });
 
-//Check for Weight of Patient based on Patient ID 
+//Check for Weight of Patient based on Patient ID
 router.post("/retrieve_weight", function (req, res) {
     const { patientID } = req.body;
     console.log("req", req.body);
@@ -129,7 +135,7 @@ router.post("/retrieve_weight", function (req, res) {
 });
 
 
-//Check for Blood Pressure of Patient based on Patient ID 
+//Check for Blood Pressure of Patient based on Patient ID
 router.post("/retrieve_blood_pressure", function (req, res) {
     const { patientID } = req.body;
     console.log("req", req.body);
@@ -153,7 +159,7 @@ router.post("/retrieve_blood_pressure", function (req, res) {
 });
 
 
-//Check if Patient has had a Colonoscopy performed 
+//Check if Patient has had a Colonoscopy performed
 router.post('/colonoscopy_check', function(req, res){
     const { patientID } = req.body;
     console.log("req", req.body);
@@ -176,13 +182,13 @@ router.post('/colonoscopy_check', function(req, res){
     });
 });
 
-//Call Preventative Services API based on gender, age, and smoking status 
+//Call Preventative Services API based on gender, age, and smoking status
 router.post('/preventatives_services', function(req, res){
 
     const { gender, age, smokingStatus } = req.body;
     console.log("req", req.body);
 
-    const agent = new https.Agent({  
+    const agent = new https.Agent({
         rejectUnauthorized: false
     });
 

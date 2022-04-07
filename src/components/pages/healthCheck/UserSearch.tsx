@@ -11,7 +11,7 @@ type UserSearchForm = {
 };
 
 export type UserSearchProperties = {
-    navigator?: Navigator;
+    navigator: Navigator<{id: string}>;
 };
 
 function UserSearch(props: UserSearchProperties) {

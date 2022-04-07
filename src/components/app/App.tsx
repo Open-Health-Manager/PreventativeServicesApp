@@ -1,8 +1,8 @@
-import HealthCheck from '../pages/healthCheck/HealthCheck';
+import DataUseAgreement from '../pages/dataUseAgreement/DataUseAgreement';
 
 function App() {
-  // For now, pass the entire thing off to HealthCheck
-  return <HealthCheck />;
+  // For now, pass the entire thing off to DataUseAgreement
+  return <DataUseAgreement />;
 }
 
 export default App;

@@ -24,7 +24,7 @@ type PatientFormValues = {
 }
 
 export type PatientInfoProps = {
-    navigator?: Navigator;
+    navigator: Navigator<{id: string}>;
 };
 
 function PatientInfo(props: PatientInfoProps) {

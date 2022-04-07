@@ -136,10 +136,10 @@ export class BackButton extends Component<{
     onClick?(navigator: Navigator): void
 }, any> {}
 
-export class Navigator extends Component<{
-    renderPage(route: any, navigator?: Navigator): JSX.Element,
-    initialRouteStack?: string[] | undefined,
-    initialRoute?: any,
+export class Navigator<R> extends Component<{
+    renderPage(route: R, navigator: Navigator): JSX.Element,
+    initialRouteStack?: R[] | undefined,
+    initialRoute?: R,
     onPrePush?(): void,
     onPostPush?(): void,
     onPrePop?(): void,
@@ -148,10 +148,10 @@ export class Navigator extends Component<{
     animationOptions?: AnimationOptions | undefined,
 }, any> {
     pages: any[];
-    routes: any[];
-    resetPage(route: any, options?: PageTransitionOptions): Promise<HTMLElement>;
-    resetPageStack(route: any, options?: PageTransitionOptions): Promise<HTMLElement>;
-    pushPage(route: any, options?: PageTransitionOptions): Promise<HTMLElement>;
+    routes: R[];
+    resetPage(route: R, options?: PageTransitionOptions): Promise<HTMLElement>;
+    resetPageStack(route: R, options?: PageTransitionOptions): Promise<HTMLElement>;
+    pushPage(route: R, options?: PageTransitionOptions): Promise<HTMLElement>;
     popPage(options?: PageTransitionOptions): Promise<HTMLElement>;
 }
 

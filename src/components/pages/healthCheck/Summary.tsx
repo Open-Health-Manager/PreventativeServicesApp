@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux'
-import { List, ListItem, Page, ProgressCircular, Button, Toolbar } from "react-onsenui";
+import { List, ListItem, Page, ProgressCircular, Button, Toolbar, Navigator } from "react-onsenui";
 import axios from "axios";
 import { addSpecificRecommendations, deleteSpecificRecommendation } from '../../../store/specificRecommendationsSlice';
 import { SpecificRecommendation } from '../../../types/uspstf';
@@ -8,6 +8,8 @@ import { SpecificRecommendation } from '../../../types/uspstf';
 //import "./Summary.css"; // Import styling
 
 import '../../../types/state';
+import PatientInfo from './PatientInfo';
+
 
 function Summary() {
 
@@ -33,7 +35,7 @@ function Summary() {
                 // If A is priority and B is not, it is smaller
                 // Otherwise, leave alone
                 // So in the priority set, 0, not, 1
-                (prioritizeSet.has(b.id) ? 0 : 1) - (prioritizeSet.has(a.id) ? 0 : 1)
+                (prioritizeSet.has(a.id) ? 0 : 1) - (prioritizeSet.has(b.id) ? 0 : 1) 
             );
 
             console.log(newArr) // Note that the original array has been sorted in-place
@@ -93,7 +95,7 @@ function Summary() {
             renderToolbar={() => <Toolbar><div className="center">{patientName}</div></Toolbar>}>
          {submitComplete ? (
             <>
-                <h2 style={{ paddingBottom: "30px" }}>Get Started: Preventative Health Check</h2>
+                <h2 style={{ paddingBottom: "5px", paddingLeft: "15px" }}>Get Started: Preventative Health Check</h2>
 
                 {  RecommendationsList?.length > 0 ?
                     <List>
@@ -102,7 +104,7 @@ function Summary() {
                                 <div className="left">{item.title}</div>
                                 <div className="expandable-content">
                                     {item.text}
-                                    <p><Button /*variant='ignore' type="submit"*/ onClick={() => filterItem(item.id)}>Ignore</Button></p>
+                                    <p><Button onClick={() => filterItem(item.id)}>Ignore</Button></p>
                                 </div>
                             </ListItem>
                             ))}

@@ -1,8 +1,8 @@
-import DataUseAgreement from '../pages/dataUseAgreement/DataUseAgreement';
+import Onboarding from '../pages/dataUseAgreement/Onboarding';
 
 function App() {
   // For now, pass the entire thing off to DataUseAgreement
-  return <DataUseAgreement />;
+  return <Onboarding />;
 }
 
 export default App;

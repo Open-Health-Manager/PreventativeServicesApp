@@ -1,0 +1,45 @@
+.sign-in-page .page__background, .sign-in-page .toolbar {
+    background-color: #428CE3;
+}
+/* Also have to override the back button color */
+.sign-in-page .back-button__icon {
+    fill: #FFF;
+}
+
+.sign-in-form {
+    background-color: #282828;
+    color: #FFF;
+    border: solid 2px #FFF;
+    border-radius: 30px;
+    padding: 41px 21px;
+    margin: 37px;
+}
+
+.sign-in-form h1 {
+    margin: 0 0 24px 0;
+    padding: 0;
+    font-weight: bold;
+}
+
+.sign-in-form .sign-in-text {
+    display: flex;
+    background-color: #FFF;
+    color: #000;
+    margin: 15px 0;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.25);
+}
+
+.sign-in-form .sign-in-text ons-icon {
+    vertical-align: top;
+}
+
+.sign-in-form .sign-in-text ons-input {
+    padding-left: 10px;
+    flex-grow: 1;
+}
+/* Also have to add padding to the material placeholder */
+.sign-in-form .sign-in-text .text-input--material__label {
+    padding-left: 10px;
+}

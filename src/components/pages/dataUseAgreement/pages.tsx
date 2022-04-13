@@ -68,7 +68,7 @@ export const PAGES: ComicPageData[] = [
         image: Page11
     },
     {
-        text: "You can transfer your data. We won't keep a copy.",
+        text: "You can transfer your data. We won\u2019t keep a copy.",
         image: Page12
     },
     {

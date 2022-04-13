@@ -2,6 +2,7 @@ import { Navigator, Page, Toolbar, BackButton } from 'react-onsenui';
 import ComicPage, { ComicRoute } from './ComicPage';
 import SignaturePage from './SignaturePage';
 import SignIn from '../signIn/SignIn';
+import SignUp from '../signIn/SignUp';
 import PAGES from './pages';
 
 function BrokenPage(props: { error: string }) {
@@ -11,13 +12,13 @@ function BrokenPage(props: { error: string }) {
     </Page>
 }
 
-function DataUseAgreement() {
+function Onboarding() {
     return <Navigator
         renderPage={(route: ComicRoute, navigator: Navigator<ComicRoute>) => {
             if (typeof route.page === 'number') {
                 if (route.page === PAGES.length) {
                     // Indicates we're at the signature page
-                    return <SignaturePage/>
+                    return <SignaturePage navigator={navigator}/>
                 }
                 const page = PAGES[route.page];
                 if (page) {
@@ -29,6 +30,8 @@ function DataUseAgreement() {
                 switch (route.page) {
                     case 'signin':
                         return <SignIn navigator={navigator}/>
+                    case 'createAccount':
+                        return <SignUp navigator={navigator}/>
                 }
             }
             return <BrokenPage error={`Unknown route ${route.page}`}/>;
@@ -37,4 +40,4 @@ function DataUseAgreement() {
     />;
 }
 
-export default DataUseAgreement;
+export default Onboarding;

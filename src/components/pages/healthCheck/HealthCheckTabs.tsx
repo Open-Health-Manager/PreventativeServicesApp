@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { Page, Tabbar, Tab } from "react-onsenui";
+import { Page, Tabbar, Tab, Navigator } from "react-onsenui";
 import Summary from './Summary';
 import CarePlan from './CarePlan';
 import History from './History';
 
-function HealthCheckTabs() {
+
+export type HealthCheckTabsProperties = {
+    navigator?: Navigator;
+};
+
+function HealthCheckTabs(props: HealthCheckTabsProperties) {
     const [index, setIndex] = useState(0);
     return (
         <Page>
@@ -12,7 +17,7 @@ function HealthCheckTabs() {
                 onPreChange={({index}: {index: number}) => { setIndex(index) }}
                 index={index} renderTabs={(activeIndex, tabbar) => [
                 {
-                    content: <Summary/>,
+                    content: <Summary navigator={props.navigator}/>,
                     tab: <Tab label="Summary" />
                 },
                 {

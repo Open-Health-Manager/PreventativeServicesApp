@@ -26,7 +26,7 @@ function UserSearch(props: UserSearchProperties) {
     const onSubmit = (data: UserSearchForm) => {
         dispatch(getPatientUserName(data.patientUserName))
         console.log(props.navigator);
-        props.navigator?.pushPage({id: 'patient'});
+        props.navigator?.pushPage({id: 'summary'});
     }
 
     return (

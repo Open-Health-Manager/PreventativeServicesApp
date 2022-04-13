@@ -9,8 +9,8 @@ import "./CarePlan.css"; // Import styling
 
 function CarePlan() {
 
-    const specificRecommendationsList = useSelector(state => state.specificRecommendations.RecommendationsList)
     const patientInfo = useSelector(state => state.patient)
+    const bloodPressureReadingString = patientInfo.systolicBloodPressure + "/" + patientInfo.diastolicBloodPressure + " mmHg"
     const [bloodPressureCheck, setBloodPressureCheck] = useState(false);
 
     const [diastolicStatus, setDiastolicStatus] = useState('')
@@ -163,13 +163,12 @@ function CarePlan() {
             renderToolbar={() => <Toolbar><div className="center">Care Plan</div></Toolbar>}>
         {bloodPressureCheck ? (
             <Card>
-                { specificRecommendationsList.filter(item => item.id === 1921).map((item) => (
-                   <ListItem expandable modifier="nodivider" key={item.id}>
-                    <div className="left">{item.title}</div>
+                   <ListItem expandable modifier="nodivider">
+                        <div className="left">Get Blood Pressure Checked</div>
                         <div className="expandable-content">
                             <p><FaExclamationTriangle/> due for a blood pressure check</p>
                             <p className="reading_header">Latest Blood Pressure Reading</p>
-                            <ListItem>Blood Pressure: {patientInfo.systolicBloodPressure}/{patientInfo.diastolicBloodPressure} mmHg</ListItem>
+                            <ListItem>Blood Pressure: {bloodPressureReadingString} </ListItem>
                             <ListItem>Date Blood Pressure Recorded: {patientInfo.bloodPressureRecorded}</ListItem>
                             { healthyStatus && 
                                 <div> 
@@ -192,16 +191,14 @@ function CarePlan() {
                             <p>We Recommend Checking your Blood Pressure Annually</p>
                         </div>
                   </ListItem>
-                ))}
             </Card>
             ) : (
-            <Card>
-                { specificRecommendationsList.filter(item => item.id === 1921).map((item) => (                   
-                    <ListItem expandable modifier="nodivider" key={item.id}>
-                    <div className="left">{item.title}</div>
-                        <div className="expandable-content" key={item.id}>
+            <Card>                   
+                    <ListItem expandable modifier="nodivider">
+                        <div className="left">Get Blood Pressure Checked</div>
+                        <div className="expandable-content">
                             <p className="reading_header">Latest Blood Pressure Reading</p>
-                            <ListItem>Blood Pressure: {patientInfo.systolicBloodPressure}/{patientInfo.diastolicBloodPressure} mmHg</ListItem>
+                            <ListItem>Blood Pressure: {bloodPressureReadingString} </ListItem>
                             <ListItem>Date Blood Pressure Recorded: {patientInfo.bloodPressureRecorded}</ListItem>
                             { healthyStatus && 
                                 <div> 
@@ -223,7 +220,6 @@ function CarePlan() {
                             }
                         </div>
                     </ListItem>
-                ))}
             </Card>
              )}
      </Page>

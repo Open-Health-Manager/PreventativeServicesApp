@@ -10,11 +10,9 @@ import { SpecificRecommendation } from '../../../types/uspstf';
 //import "./Summary.css"; // Import styling
 
 import '../../../types/state';
-import PatientInfo from './PatientInfo';
-import { stringify } from 'qs';
 
 export type SummaryProperties = {
-    navigator?: Navigator;
+    navigator: Navigator<{id: string}>;
 };
 
 
@@ -35,14 +33,14 @@ function Summary(props: SummaryProperties) {
 
 
     useEffect(() => {
-        if(status! == "initialState"){    
+        if(status! == "initialState"){
             fetchPreventativeServiceData()
         } else {
         setSubmitComplete(true)
         }
     }, [])
 
-    
+
     const prioritizeList = (data: { specificRecommendations: SpecificRecommendation[] }) => {
             const specificRecommendations = data.specificRecommendations
             console.log("initialize specificRecommendations", specificRecommendations)
@@ -54,7 +52,7 @@ function Summary(props: SummaryProperties) {
                 // If A is priority and B is not, it is smaller
                 // Otherwise, leave alone
                 // So in the priority set, 0, not, 1
-                (prioritizeSet.has(a.id) ? 0 : 1) - (prioritizeSet.has(b.id) ? 0 : 1) 
+                (prioritizeSet.has(a.id) ? 0 : 1) - (prioritizeSet.has(b.id) ? 0 : 1)
             );
 
             console.log(newArr) // Note that the original array has been sorted in-place
@@ -95,7 +93,7 @@ function Summary(props: SummaryProperties) {
                 if (!patient) {
                     console.log('Patient not found');
                     return;
-                }                
+                }
                 const patientID = patient.id;
                 const gender = patient.gender;
                 const dob = patient.birthDate;
@@ -133,7 +131,7 @@ function Summary(props: SummaryProperties) {
                 setUserLookupError('An unknown error happened while looking up patient data.');
             }
         }
-        
+
 
     //calculates the current age from data of birth
     const calculate_age = (dob1: string) => {
@@ -198,7 +196,7 @@ function Summary(props: SummaryProperties) {
         var data = response.data;
         console.log(data)
         console.log("preventative services success");
-        return data; 
+        return data;
     }
 
     const getBMI = async (patientID: string) => {
@@ -307,7 +305,7 @@ function Summary(props: SummaryProperties) {
 
     const goToPatientPage = () => {
         console.log(props.navigator);
-        props.navigator?.pushPage({id: 'patient'});
+        props.navigator.pushPage({id: 'patient'});
     }
 
     return (

@@ -6,7 +6,7 @@ import History from './History';
 
 
 export type HealthCheckTabsProperties = {
-    navigator?: Navigator;
+    navigator: Navigator<{id: string}>;
 };
 
 function HealthCheckTabs(props: HealthCheckTabsProperties) {

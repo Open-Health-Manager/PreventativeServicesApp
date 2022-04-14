@@ -12,7 +12,11 @@ function BrokenPage(props: { error: string }) {
     </Page>
 }
 
-function Onboarding() {
+export type OnboardingProps = {
+    onUserLoggedIn?: (email: string) => void;
+}
+
+function Onboarding(props: OnboardingProps) {
     return <Navigator
         renderPage={(route: ComicRoute, navigator: Navigator<ComicRoute>) => {
             if (typeof route.page === 'number') {
@@ -29,7 +33,11 @@ function Onboarding() {
             } else {
                 switch (route.page) {
                     case 'signin':
-                        return <SignIn navigator={navigator}/>
+                        return <SignIn navigator={navigator} onUserLoggedIn={(user) => {
+                            if (props.onUserLoggedIn) {
+                                props.onUserLoggedIn(user);
+                            }
+                        }}/>
                     case 'createAccount':
                         return <SignUp navigator={navigator}/>
                 }

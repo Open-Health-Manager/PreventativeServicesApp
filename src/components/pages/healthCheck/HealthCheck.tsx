@@ -1,5 +1,4 @@
 import { Navigator, Page } from 'react-onsenui';
-import UserSearch from './UserSearch';
 import PatientInfo from './PatientInfo';
 import HealthCheckTabs from './HealthCheckTabs';
 
@@ -13,8 +12,6 @@ function HealthCheck() {
                 console.log('Route', route);
                 console.log('Navigator', navigator);
                 switch (route.id) {
-                case 'search':
-                    return <UserSearch navigator={navigator}/>;
                 case 'patient':
                     return <PatientInfo navigator={navigator}/>
                 case 'summary':
@@ -22,7 +19,7 @@ function HealthCheck() {
                 }
                 return <Page>{route.id}: Not found</Page>;
             }}
-            initialRoute={{id: 'search', title: 'Select User'}}></Navigator>
+            initialRoute={{id: 'summary'}}></Navigator>
     )
 }
 

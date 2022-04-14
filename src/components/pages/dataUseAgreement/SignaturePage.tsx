@@ -27,7 +27,7 @@ function SignaturePage(props: SignaturePageProps) {
                         const checkbox = event.target as HTMLInputElement;
                         setChecked(checkbox.checked);
                     }
-                }}/> By checking this box, I understand and agree to the terms of the Patient Data Use Agreement and acknowledge that typing my name above represents my electronic signature.</p>
+                }}/> By checking this box, I understand and agree to the terms of the <a href="#" target="_blank">Patient Data Use Agreement</a> and acknowledge that typing my name above represents my electronic signature.</p>
             <p><Button>Disagree</Button><Button onClick={() => {
                 // If valid, allow the user to proceed
                 props.navigator.pushPage({page: 'createAccount'});

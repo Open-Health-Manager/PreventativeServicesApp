@@ -15,7 +15,7 @@ function HealthCheck() {
                 case 'patient':
                     return <PatientInfo navigator={navigator}/>
                 case 'summary':
-                    return <HealthCheckTabs/>
+                    return <HealthCheckTabs navigator={navigator}/>
                 }
                 return <Page>{route.id}: Not found</Page>;
             }}

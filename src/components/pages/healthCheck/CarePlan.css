@@ -1,11 +1,27 @@
 .care_plan_container {
-  padding-top: 15px;
+  padding-top: 5px;
 }
 
 .care_plan_container p {
-  color: white;
+  color: black;
 }
 
 .reading_header {
   font-weight: bold;
+  padding-top: 10px;
+}
+
+.healthStatusText {
+  font-weight: bold;
+  color: green;
+}
+
+.cautiousStatusText {
+  font-weight: bold;
+  color: #ffa701;
+}
+
+.dangerousStatusText {
+  font-weight: bold;
+  color: red;
 }
